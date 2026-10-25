@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:tns="http://scolarite.example.com/accounts"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 targetNamespace="http://scolarite.example.com/accounts"
+                 name="AccountsService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://scolarite.example.com/accounts" elementFormDefault="qualified">
+
+      <!-- Role enumeration -->
+      <xsd:simpleType name="Role">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="administrateur"/>
+          <xsd:enumeration value="enseignant"/>
+          <xsd:enumeration value="etudiant"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+
+      <!-- Compte type -->
+      <xsd:complexType name="Compte">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="prenom" type="xsd:string"/>
+          <xsd:element name="email" type="xsd:string"/>
+          <xsd:element name="role" type="tns:Role"/>
+          <xsd:element name="classe" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- creerCompte — when role=etudiant, the optional dossier fields
+           (matricule, dateNaissance, adresse) create the Etudiant record too,
+           so a student account + dossier are created in a single operation. -->
+      <xsd:element name="creerCompte">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="nom" type="xsd:string"/>
+            <xsd:element name="prenom" type="xsd:string"/>
+            <xsd:element name="email" type="xsd:string"/>
+            <xsd:element name="motDePasse" type="xsd:string"/>
+            <xsd:element name="role" type="tns:Role"/>
+            <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="matricule" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="dateNaissance" type="xsd:date" minOccurs="0"/>
+            <xsd:element name="adresse" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="creerCompteResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="compte" type="tns:Compte"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- listerComptes -->
+      <xsd:element name="listerComptes">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- Wrapper type for the list response. Named (not inline-anonymous) so the
+           soap library serializes <comptes><compte/>...</comptes> correctly.
+           The on-the-wire XML is identical to the inline form. -->
+      <xsd:complexType name="ListeComptes">
+        <xsd:sequence>
+          <xsd:element name="compte" type="tns:Compte" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- listerComptes response (wrapper pattern: <comptes><compte/><compte/></comptes>) -->
+      <xsd:element name="listerComptesResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="comptes" type="tns:ListeComptes"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- modifierCompte -->
+      <xsd:element name="modifierCompte">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="nom" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="prenom" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="email" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="motDePasse" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="modifierCompteResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="compte" type="tns:Compte"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- supprimerCompte -->
+      <xsd:element name="supprimerCompte">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="supprimerCompteResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="succes" type="xsd:boolean"/>
+            <xsd:element name="message" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- Messages -->
+  <wsdl:message name="creerCompteRequestMessage">
+    <wsdl:part name="parameters" element="tns:creerCompte"/>
+  </wsdl:message>
+  <wsdl:message name="creerCompteResponseMessage">
+    <wsdl:part name="parameters" element="tns:creerCompteResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="listerComptesRequestMessage">
+    <wsdl:part name="parameters" element="tns:listerComptes"/>
+  </wsdl:message>
+  <wsdl:message name="listerComptesResponseMessage">
+    <wsdl:part name="parameters" element="tns:listerComptesResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="modifierCompteRequestMessage">
+    <wsdl:part name="parameters" element="tns:modifierCompte"/>
+  </wsdl:message>
+  <wsdl:message name="modifierCompteResponseMessage">
+    <wsdl:part name="parameters" element="tns:modifierCompteResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="supprimerCompteRequestMessage">
+    <wsdl:part name="parameters" element="tns:supprimerCompte"/>
+  </wsdl:message>
+  <wsdl:message name="supprimerCompteResponseMessage">
+    <wsdl:part name="parameters" element="tns:supprimerCompteResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="AccountsFaultMessage">
+    <wsdl:part name="fault" type="xsd:string"/>
+  </wsdl:message>
+
+  <!-- Port Type -->
+  <wsdl:portType name="AccountsPortType">
+    <wsdl:operation name="creerCompte">
+      <wsdl:documentation>Crée un compte étudiant ou enseignant (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:creerCompteRequestMessage"/>
+      <wsdl:output message="tns:creerCompteResponseMessage"/>
+      <wsdl:fault name="AccountsFault" message="tns:AccountsFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="listerComptes">
+      <wsdl:documentation>Liste les comptes (filtrable par rôle).</wsdl:documentation>
+      <wsdl:input message="tns:listerComptesRequestMessage"/>
+      <wsdl:output message="tns:listerComptesResponseMessage"/>
+      <wsdl:fault name="AccountsFault" message="tns:AccountsFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="modifierCompte">
+      <wsdl:documentation>Modifie un compte existant.</wsdl:documentation>
+      <wsdl:input message="tns:modifierCompteRequestMessage"/>
+      <wsdl:output message="tns:modifierCompteResponseMessage"/>
+      <wsdl:fault name="AccountsFault" message="tns:AccountsFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="supprimerCompte">
+      <wsdl:documentation>Supprime un compte par son id.</wsdl:documentation>
+      <wsdl:input message="tns:supprimerCompteRequestMessage"/>
+      <wsdl:output message="tns:supprimerCompteResponseMessage"/>
+      <wsdl:fault name="AccountsFault" message="tns:AccountsFaultMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Binding -->
+  <wsdl:binding name="AccountsBinding" type="tns:AccountsPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="creerCompte">
+      <soap:operation soapAction="http://scolarite.example.com/accounts/creerCompte"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AccountsFault"><soap:fault name="AccountsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="listerComptes">
+      <soap:operation soapAction="http://scolarite.example.com/accounts/listerComptes"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AccountsFault"><soap:fault name="AccountsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="modifierCompte">
+      <soap:operation soapAction="http://scolarite.example.com/accounts/modifierCompte"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AccountsFault"><soap:fault name="AccountsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="supprimerCompte">
+      <soap:operation soapAction="http://scolarite.example.com/accounts/supprimerCompte"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AccountsFault"><soap:fault name="AccountsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service -->
+  <wsdl:service name="AccountsService">
+    <wsdl:port name="AccountsPort" binding="tns:AccountsBinding">
+      <soap:address location="http://localhost:3000/wsdl/accounts"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

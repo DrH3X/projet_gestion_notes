@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:tns="http://scolarite.example.com/auth"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 targetNamespace="http://scolarite.example.com/auth"
+                 name="AuthService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://scolarite.example.com/auth" elementFormDefault="qualified">
+
+      <!-- Role enumeration -->
+      <xsd:simpleType name="Role">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="administrateur"/>
+          <xsd:enumeration value="enseignant"/>
+          <xsd:enumeration value="etudiant"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+
+      <!-- User complex type -->
+      <xsd:complexType name="User">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="prenom" type="xsd:string"/>
+          <xsd:element name="email" type="xsd:string"/>
+          <xsd:element name="role" type="tns:Role"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- seConnecter request (element name = operation name = document/literal wrapped) -->
+      <xsd:element name="seConnecter">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="email" type="xsd:string"/>
+            <xsd:element name="motDePasse" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- seConnecter response -->
+      <xsd:element name="seConnecterResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="jeton" type="xsd:string"/>
+            <xsd:element name="utilisateur" type="tns:User"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- seDeconnecter request (element name = operation name) -->
+      <xsd:element name="seDeconnecter">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="jeton" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- seDeconnecter response -->
+      <xsd:element name="seDeconnecterResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="succes" type="xsd:boolean"/>
+            <xsd:element name="message" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- Messages -->
+  <wsdl:message name="seConnecterRequestMessage">
+    <wsdl:part name="parameters" element="tns:seConnecter"/>
+  </wsdl:message>
+
+  <wsdl:message name="seConnecterResponseMessage">
+    <wsdl:part name="parameters" element="tns:seConnecterResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="seDeconnecterRequestMessage">
+    <wsdl:part name="parameters" element="tns:seDeconnecter"/>
+  </wsdl:message>
+
+  <wsdl:message name="seDeconnecterResponseMessage">
+    <wsdl:part name="parameters" element="tns:seDeconnecterResponse"/>
+  </wsdl:message>
+
+  <!-- Port Type -->
+  <wsdl:portType name="AuthPortType">
+    <wsdl:operation name="seConnecter">
+      <wsdl:documentation>Authentifie un utilisateur et renvoie un jeton JWT.</wsdl:documentation>
+      <wsdl:input message="tns:seConnecterRequestMessage"/>
+      <wsdl:output message="tns:seConnecterResponseMessage"/>
+      <wsdl:fault name="AuthFault" message="tns:AuthFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="seDeconnecter">
+      <wsdl:documentation>Déconnecte l'utilisateur en invalidant son jeton.</wsdl:documentation>
+      <wsdl:input message="tns:seDeconnecterRequestMessage"/>
+      <wsdl:output message="tns:seDeconnecterResponseMessage"/>
+      <wsdl:fault name="AuthFault" message="tns:AuthFaultMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Fault message (defined at top level so it can be reused) -->
+  <wsdl:message name="AuthFaultMessage">
+    <wsdl:part name="fault" type="xsd:string"/>
+  </wsdl:message>
+
+  <!-- Binding -->
+  <wsdl:binding name="AuthBinding" type="tns:AuthPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="seConnecter">
+      <soap:operation soapAction="http://scolarite.example.com/auth/seConnecter"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AuthFault"><soap:fault name="AuthFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="seDeconnecter">
+      <soap:operation soapAction="http://scolarite.example.com/auth/seDeconnecter"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="AuthFault"><soap:fault name="AuthFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service -->
+  <wsdl:service name="AuthService">
+    <wsdl:port name="AuthPort" binding="tns:AuthBinding">
+      <soap:address location="http://localhost:3000/wsdl"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

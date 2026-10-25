@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:tns="http://scolarite.example.com/students"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 targetNamespace="http://scolarite.example.com/students"
+                 name="StudentsService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://scolarite.example.com/students" elementFormDefault="qualified">
+
+      <!-- Dossier étudiant (compte + infos académiques). classe/dateNaissance/adresse
+           are non-optional in the WSDL (empty string when null) so the soap library
+           gets a consistent item shape across the array. -->
+      <xsd:complexType name="Dossier">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="userId" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="prenom" type="xsd:string"/>
+          <xsd:element name="email" type="xsd:string"/>
+          <xsd:element name="classe" type="xsd:string"/>
+          <xsd:element name="matricule" type="xsd:string"/>
+          <xsd:element name="dateNaissance" type="xsd:string"/>
+          <xsd:element name="adresse" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- creerDossier -->
+      <xsd:element name="creerDossier">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="nom" type="xsd:string"/>
+            <xsd:element name="prenom" type="xsd:string"/>
+            <xsd:element name="email" type="xsd:string"/>
+            <xsd:element name="motDePasse" type="xsd:string"/>
+            <xsd:element name="classe" type="xsd:string"/>
+            <xsd:element name="matricule" type="xsd:string"/>
+            <xsd:element name="dateNaissance" type="xsd:date" minOccurs="0"/>
+            <xsd:element name="adresse" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="creerDossierResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossier" type="tns:Dossier"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- listerDossiers -->
+      <xsd:element name="listerDossiers">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:complexType name="ListeDossiers">
+        <xsd:sequence>
+          <xsd:element name="dossier" type="tns:Dossier" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="listerDossiersResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossiers" type="tns:ListeDossiers"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- consulterDossier -->
+      <xsd:element name="consulterDossier">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="consulterDossierResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossier" type="tns:Dossier"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- consulterMonDossier (etudiant only — uses JWT user.id, no input) -->
+      <xsd:element name="consulterMonDossier">
+        <xsd:complexType>
+          <xsd:sequence/>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="consulterMonDossierResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossier" type="tns:Dossier"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- listerMesEtudiants (enseignant only — BF9) -->
+      <xsd:element name="listerMesEtudiants">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="listerMesEtudiantsResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossiers" type="tns:ListeDossiers"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- modifierDossier -->
+      <xsd:element name="modifierDossier">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="nom" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="prenom" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="email" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="matricule" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="dateNaissance" type="xsd:date" minOccurs="0"/>
+            <xsd:element name="adresse" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="modifierDossierResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="dossier" type="tns:Dossier"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- supprimerDossier -->
+      <xsd:element name="supprimerDossier">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="supprimerDossierResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="succes" type="xsd:boolean"/>
+            <xsd:element name="message" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- Messages -->
+  <wsdl:message name="creerDossierRequestMessage">
+    <wsdl:part name="parameters" element="tns:creerDossier"/>
+  </wsdl:message>
+  <wsdl:message name="creerDossierResponseMessage">
+    <wsdl:part name="parameters" element="tns:creerDossierResponse"/>
+  </wsdl:message>
+  <wsdl:message name="listerDossiersRequestMessage">
+    <wsdl:part name="parameters" element="tns:listerDossiers"/>
+  </wsdl:message>
+  <wsdl:message name="listerDossiersResponseMessage">
+    <wsdl:part name="parameters" element="tns:listerDossiersResponse"/>
+  </wsdl:message>
+  <wsdl:message name="consulterDossierRequestMessage">
+    <wsdl:part name="parameters" element="tns:consulterDossier"/>
+  </wsdl:message>
+  <wsdl:message name="consulterDossierResponseMessage">
+    <wsdl:part name="parameters" element="tns:consulterDossierResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="consulterMonDossierRequestMessage">
+    <wsdl:part name="parameters" element="tns:consulterMonDossier"/>
+  </wsdl:message>
+  <wsdl:message name="consulterMonDossierResponseMessage">
+    <wsdl:part name="parameters" element="tns:consulterMonDossierResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="listerMesEtudiantsRequestMessage">
+    <wsdl:part name="parameters" element="tns:listerMesEtudiants"/>
+  </wsdl:message>
+  <wsdl:message name="listerMesEtudiantsResponseMessage">
+    <wsdl:part name="parameters" element="tns:listerMesEtudiantsResponse"/>
+  </wsdl:message>
+  <wsdl:message name="modifierDossierRequestMessage">
+    <wsdl:part name="parameters" element="tns:modifierDossier"/>
+  </wsdl:message>
+  <wsdl:message name="modifierDossierResponseMessage">
+    <wsdl:part name="parameters" element="tns:modifierDossierResponse"/>
+  </wsdl:message>
+  <wsdl:message name="supprimerDossierRequestMessage">
+    <wsdl:part name="parameters" element="tns:supprimerDossier"/>
+  </wsdl:message>
+  <wsdl:message name="supprimerDossierResponseMessage">
+    <wsdl:part name="parameters" element="tns:supprimerDossierResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StudentsFaultMessage">
+    <wsdl:part name="fault" type="xsd:string"/>
+  </wsdl:message>
+
+  <!-- Port Type -->
+  <wsdl:portType name="StudentsPortType">
+    <wsdl:operation name="creerDossier">
+      <wsdl:documentation>Crée le compte + le dossier étudiant (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:creerDossierRequestMessage"/>
+      <wsdl:output message="tns:creerDossierResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerDossiers">
+      <wsdl:documentation>Liste tous les dossiers (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:listerDossiersRequestMessage"/>
+      <wsdl:output message="tns:listerDossiersResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="consulterDossier">
+      <wsdl:documentation>Consulte un dossier par id (admin, enseignant, ou soi-même).</wsdl:documentation>
+      <wsdl:input message="tns:consulterDossierRequestMessage"/>
+      <wsdl:output message="tns:consulterDossierResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="consulterMonDossier">
+      <wsdl:documentation>Consulte son propre dossier étudiant (étudiant only — id pris du JWT).</wsdl:documentation>
+      <wsdl:input message="tns:consulterMonDossierRequestMessage"/>
+      <wsdl:output message="tns:consulterMonDossierResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerMesEtudiants">
+      <wsdl:documentation>Liste les étudiants (enseignant only — BF9). Filtrable par classe.</wsdl:documentation>
+      <wsdl:input message="tns:listerMesEtudiantsRequestMessage"/>
+      <wsdl:output message="tns:listerMesEtudiantsResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="modifierDossier">
+      <wsdl:documentation>Modifie un dossier (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:modifierDossierRequestMessage"/>
+      <wsdl:output message="tns:modifierDossierResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerDossier">
+      <wsdl:documentation>Supprime un dossier (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:supprimerDossierRequestMessage"/>
+      <wsdl:output message="tns:supprimerDossierResponseMessage"/>
+      <wsdl:fault name="StudentsFault" message="tns:StudentsFaultMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Binding -->
+  <wsdl:binding name="StudentsBinding" type="tns:StudentsPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="creerDossier">
+      <soap:operation soapAction="http://scolarite.example.com/students/creerDossier"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerDossiers">
+      <soap:operation soapAction="http://scolarite.example.com/students/listerDossiers"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="consulterDossier">
+      <soap:operation soapAction="http://scolarite.example.com/students/consulterDossier"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="consulterMonDossier">
+      <soap:operation soapAction="http://scolarite.example.com/students/consulterMonDossier"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerMesEtudiants">
+      <soap:operation soapAction="http://scolarite.example.com/students/listerMesEtudiants"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="modifierDossier">
+      <soap:operation soapAction="http://scolarite.example.com/students/modifierDossier"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerDossier">
+      <soap:operation soapAction="http://scolarite.example.com/students/supprimerDossier"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="StudentsFault"><soap:fault name="StudentsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service -->
+  <wsdl:service name="StudentsService">
+    <wsdl:port name="StudentsPort" binding="tns:StudentsBinding">
+      <soap:address location="http://localhost:3000/wsdl/students"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:tns="http://scolarite.example.com/subjects"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 targetNamespace="http://scolarite.example.com/subjects"
+                 name="SubjectsService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://scolarite.example.com/subjects" elementFormDefault="qualified">
+
+      <!-- Matière (subject). enseignantNom/Prenom always present (empty string if missing)
+           so the soap library gets a consistent item shape. -->
+      <xsd:complexType name="Matiere">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="intitule" type="xsd:string"/>
+          <xsd:element name="coefficient" type="xsd:decimal"/>
+          <xsd:element name="enseignantId" type="xsd:string"/>
+          <xsd:element name="enseignantNom" type="xsd:string"/>
+          <xsd:element name="enseignantPrenom" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- creerMatiere -->
+      <xsd:element name="creerMatiere">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="intitule" type="xsd:string"/>
+            <xsd:element name="coefficient" type="xsd:decimal"/>
+            <xsd:element name="enseignantId" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="creerMatiereResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="matiere" type="tns:Matiere"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- listerMatieres -->
+      <xsd:element name="listerMatieres">
+        <xsd:complexType>
+          <xsd:sequence/>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:complexType name="ListeMatieres">
+        <xsd:sequence>
+          <xsd:element name="matiere" type="tns:Matiere" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:element name="listerMatieresResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="matieres" type="tns:ListeMatieres"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- listerMesMatieres (pour l'enseignant connecté) -->
+      <xsd:element name="listerMesMatieres">
+        <xsd:complexType>
+          <xsd:sequence/>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="listerMesMatieresResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="matieres" type="tns:ListeMatieres"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- modifierMatiere -->
+      <xsd:element name="modifierMatiere">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="intitule" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="coefficient" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="enseignantId" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="modifierMatiereResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="matiere" type="tns:Matiere"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- supprimerMatiere -->
+      <xsd:element name="supprimerMatiere">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="supprimerMatiereResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="succes" type="xsd:boolean"/>
+            <xsd:element name="message" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- Messages -->
+  <wsdl:message name="creerMatiereRequestMessage">
+    <wsdl:part name="parameters" element="tns:creerMatiere"/>
+  </wsdl:message>
+  <wsdl:message name="creerMatiereResponseMessage">
+    <wsdl:part name="parameters" element="tns:creerMatiereResponse"/>
+  </wsdl:message>
+  <wsdl:message name="listerMatieresRequestMessage">
+    <wsdl:part name="parameters" element="tns:listerMatieres"/>
+  </wsdl:message>
+  <wsdl:message name="listerMatieresResponseMessage">
+    <wsdl:part name="parameters" element="tns:listerMatieresResponse"/>
+  </wsdl:message>
+  <wsdl:message name="listerMesMatieresRequestMessage">
+    <wsdl:part name="parameters" element="tns:listerMesMatieres"/>
+  </wsdl:message>
+  <wsdl:message name="listerMesMatieresResponseMessage">
+    <wsdl:part name="parameters" element="tns:listerMesMatieresResponse"/>
+  </wsdl:message>
+  <wsdl:message name="modifierMatiereRequestMessage">
+    <wsdl:part name="parameters" element="tns:modifierMatiere"/>
+  </wsdl:message>
+  <wsdl:message name="modifierMatiereResponseMessage">
+    <wsdl:part name="parameters" element="tns:modifierMatiereResponse"/>
+  </wsdl:message>
+  <wsdl:message name="supprimerMatiereRequestMessage">
+    <wsdl:part name="parameters" element="tns:supprimerMatiere"/>
+  </wsdl:message>
+  <wsdl:message name="supprimerMatiereResponseMessage">
+    <wsdl:part name="parameters" element="tns:supprimerMatiereResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SubjectsFaultMessage">
+    <wsdl:part name="fault" type="xsd:string"/>
+  </wsdl:message>
+
+  <!-- Port Type -->
+  <wsdl:portType name="SubjectsPortType">
+    <wsdl:operation name="creerMatiere">
+      <wsdl:documentation>Crée une matière + affecte l'enseignant responsable (admin only, BF5).</wsdl:documentation>
+      <wsdl:input message="tns:creerMatiereRequestMessage"/>
+      <wsdl:output message="tns:creerMatiereResponseMessage"/>
+      <wsdl:fault name="SubjectsFault" message="tns:SubjectsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerMatieres">
+      <wsdl:documentation>Liste toutes les matières (tous authentifiés, BF6).</wsdl:documentation>
+      <wsdl:input message="tns:listerMatieresRequestMessage"/>
+      <wsdl:output message="tns:listerMatieresResponseMessage"/>
+      <wsdl:fault name="SubjectsFault" message="tns:SubjectsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerMesMatieres">
+      <wsdl:documentation>Liste les matières de l'enseignant connecté (BF8).</wsdl:documentation>
+      <wsdl:input message="tns:listerMesMatieresRequestMessage"/>
+      <wsdl:output message="tns:listerMesMatieresResponseMessage"/>
+      <wsdl:fault name="SubjectsFault" message="tns:SubjectsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="modifierMatiere">
+      <wsdl:documentation>Modifie une matière (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:modifierMatiereRequestMessage"/>
+      <wsdl:output message="tns:modifierMatiereResponseMessage"/>
+      <wsdl:fault name="SubjectsFault" message="tns:SubjectsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerMatiere">
+      <wsdl:documentation>Supprime une matière (admin only).</wsdl:documentation>
+      <wsdl:input message="tns:supprimerMatiereRequestMessage"/>
+      <wsdl:output message="tns:supprimerMatiereResponseMessage"/>
+      <wsdl:fault name="SubjectsFault" message="tns:SubjectsFaultMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Binding -->
+  <wsdl:binding name="SubjectsBinding" type="tns:SubjectsPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="creerMatiere">
+      <soap:operation soapAction="http://scolarite.example.com/subjects/creerMatiere"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SubjectsFault"><soap:fault name="SubjectsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerMatieres">
+      <soap:operation soapAction="http://scolarite.example.com/subjects/listerMatieres"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SubjectsFault"><soap:fault name="SubjectsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerMesMatieres">
+      <soap:operation soapAction="http://scolarite.example.com/subjects/listerMesMatieres"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SubjectsFault"><soap:fault name="SubjectsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="modifierMatiere">
+      <soap:operation soapAction="http://scolarite.example.com/subjects/modifierMatiere"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SubjectsFault"><soap:fault name="SubjectsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerMatiere">
+      <soap:operation soapAction="http://scolarite.example.com/subjects/supprimerMatiere"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SubjectsFault"><soap:fault name="SubjectsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service -->
+  <wsdl:service name="SubjectsService">
+    <wsdl:port name="SubjectsPort" binding="tns:SubjectsBinding">
+      <soap:address location="http://localhost:3000/wsdl/subjects"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

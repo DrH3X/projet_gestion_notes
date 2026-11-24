@@ -4,7 +4,7 @@
                  xmlns:tns="http://scolarite.example.com/accounts"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  targetNamespace="http://scolarite.example.com/accounts"
-                 name="AccountsService">
+                 name="ServiceComptes">
 
   <wsdl:types>
     <xsd:schema targetNamespace="http://scolarite.example.com/accounts" elementFormDefault="qualified">
@@ -161,7 +161,7 @@
   </wsdl:message>
 
   <!-- Port Type -->
-  <wsdl:portType name="AccountsPortType">
+  <wsdl:portType name="PortTypeComptes">
     <wsdl:operation name="creerCompte">
       <wsdl:documentation>Crée un compte étudiant ou enseignant (admin only).</wsdl:documentation>
       <wsdl:input message="tns:creerCompteRequestMessage"/>
@@ -192,7 +192,7 @@
   </wsdl:portType>
 
   <!-- Binding -->
-  <wsdl:binding name="AccountsBinding" type="tns:AccountsPortType">
+  <wsdl:binding name="LiaisonComptes" type="tns:PortTypeComptes">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="creerCompte">
@@ -225,8 +225,8 @@
   </wsdl:binding>
 
   <!-- Service -->
-  <wsdl:service name="AccountsService">
-    <wsdl:port name="AccountsPort" binding="tns:AccountsBinding">
+  <wsdl:service name="ServiceComptes">
+    <wsdl:port name="PortComptes" binding="tns:LiaisonComptes">
       <soap:address location="http://localhost:3000/wsdl/accounts"/>
     </wsdl:port>
   </wsdl:service>

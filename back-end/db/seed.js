@@ -6,10 +6,10 @@
 
 require('dotenv').config();
 const { sequelize, User, Etudiant, Matiere } = require('../src/models');
-const { hashPassword } = require('../src/utils/hash');
-const authController = require('../src/controllers/authController');
-const studentsController = require('../src/controllers/studentsController');
-const subjectsController = require('../src/controllers/subjectsController');
+const { hashPassword } = require('../src/utils/hachage');
+const authController = require('../src/controllers/controleurAuth');
+const studentsController = require('../src/controllers/controleurEtudiants');
+const subjectsController = require('../src/controllers/controleurMatieres');
 
 const demoAccounts = [
   { nom: 'Admin', prenom: 'Scolarite', email: 'admin@scolarite.com', motDePasse: 'admin123', role: 'administrateur', classe: null },

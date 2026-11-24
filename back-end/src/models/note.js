@@ -6,8 +6,8 @@
 // A (etudiant, matiere, type) triple is unique (one DS / one examen / one TP per subject).
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const User = require('./user');
+const sequelize = require('../config/base-donnees');
+const User = require('./utilisateur');
 const Etudiant = require('./etudiant');
 const Matiere = require('./matiere');
 

@@ -1,10 +1,10 @@
-// src/services/accountsService.js
+// src/services/serviceComptes.js
 // SOAP service object for the Accounts service (Sprint 2).
 // RBAC: all operations require role "administrateur" via extractUser(req).
 
-const controller = require('../controllers/accountsController');
-const { extractUser } = require('../middleware/authMiddleware');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const controller = require('../controllers/controleurComptes');
+const { extractUser } = require('../middleware/middlewareAuth');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 function requireAdmin(req) {
   const user = extractUser(req);
@@ -18,8 +18,8 @@ function requireAdmin(req) {
 }
 
 const accountsService = {
-  AccountsService: {
-    AccountsPort: {
+  ServiceComptes: {
+    PortComptes: {
       creerCompte: function (args, cb, headers, req) {
         const fault = requireAdmin(req);
         if (fault) return cb(fault);

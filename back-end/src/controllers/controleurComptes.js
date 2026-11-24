@@ -1,11 +1,11 @@
-// src/controllers/accountsController.js
+// src/controllers/controleurComptes.js
 // Sprint 2 — Gestion des comptes (students + teachers)
 // CRUD operations: creerCompte, listerComptes, modifierCompte, supprimerCompte
 // All operations are restricted to role "administrateur" (enforced in the service).
 
 const { User, Etudiant } = require('../models');
-const { hashPassword } = require('../utils/hash');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const { hashPassword } = require('../utils/hachage');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 // Allowed roles for an account
 const VALID_ROLES = ['administrateur', 'enseignant', 'etudiant'];

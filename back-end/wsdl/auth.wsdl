@@ -4,7 +4,7 @@
                  xmlns:tns="http://scolarite.example.com/auth"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  targetNamespace="http://scolarite.example.com/auth"
-                 name="AuthService">
+                 name="ServiceAuthentification">
 
   <wsdl:types>
     <xsd:schema targetNamespace="http://scolarite.example.com/auth" elementFormDefault="qualified">
@@ -89,7 +89,7 @@
   </wsdl:message>
 
   <!-- Port Type -->
-  <wsdl:portType name="AuthPortType">
+  <wsdl:portType name="PortTypeAuthentification">
     <wsdl:operation name="seConnecter">
       <wsdl:documentation>Authentifie un utilisateur et renvoie un jeton JWT.</wsdl:documentation>
       <wsdl:input message="tns:seConnecterRequestMessage"/>
@@ -111,7 +111,7 @@
   </wsdl:message>
 
   <!-- Binding -->
-  <wsdl:binding name="AuthBinding" type="tns:AuthPortType">
+  <wsdl:binding name="LiaisonAuthentification" type="tns:PortTypeAuthentification">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="seConnecter">
@@ -130,8 +130,8 @@
   </wsdl:binding>
 
   <!-- Service -->
-  <wsdl:service name="AuthService">
-    <wsdl:port name="AuthPort" binding="tns:AuthBinding">
+  <wsdl:service name="ServiceAuthentification">
+    <wsdl:port name="PortAuthentification" binding="tns:LiaisonAuthentification">
       <soap:address location="http://localhost:3000/wsdl"/>
     </wsdl:port>
   </wsdl:service>

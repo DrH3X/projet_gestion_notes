@@ -1,4 +1,4 @@
-// src/controllers/authController.js
+// src/controllers/controleurAuth.js
 // Controller functions for the Authentication service (Sprint 1).
 // Each function corresponds to one SOAP operation:
 //   authUser   -> seConnecter
@@ -6,9 +6,9 @@
 // createUser is also provided as a helper (used for seeding and later sprints).
 
 const { User } = require('../models');
-const { hashPassword, comparePassword } = require('../utils/hash');
-const { generateToken, verifyToken } = require('../utils/token');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const { hashPassword, comparePassword } = require('../utils/hachage');
+const { generateToken, verifyToken } = require('../utils/jeton');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 // Simple in-memory store for invalidated tokens (logout).
 // In production use Redis or a DB-backed blacklist.

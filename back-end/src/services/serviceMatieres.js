@@ -1,13 +1,13 @@
-// src/services/subjectsService.js
+// src/services/serviceMatieres.js
 // SOAP service object for the Subjects (Matières) service (Sprint 3).
 // RBAC:
 //   creerMatiere, modifierMatiere, supprimerMatiere → admin only
 //   listerMatieres → any authenticated user
 //   listerMesMatieres → enseignant only
 
-const controller = require('../controllers/subjectsController');
-const { extractUser } = require('../middleware/authMiddleware');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const controller = require('../controllers/controleurMatieres');
+const { extractUser } = require('../middleware/middlewareAuth');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 function requireAdmin(req) {
   const user = extractUser(req);
@@ -29,8 +29,8 @@ function requireAuthenticated(req) {
 }
 
 const subjectsService = {
-  SubjectsService: {
-    SubjectsPort: {
+  ServiceMatieres: {
+    PortMatieres: {
       creerMatiere: function (args, cb, headers, req) {
         const fault = requireAdmin(req);
         if (fault) return cb(fault);

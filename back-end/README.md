@@ -53,16 +53,19 @@ npm run dev    # développement (nodemon, redémarre automatiquement)
 npm start      # production
 ```
 
-Au premier démarrage, la base est créée et des données de démonstration sont
-insérées automatiquement (3 comptes + 1 dossier + 2 matières + 6 notes).
+Au premier démarrage, la base est créée et un compte administrateur initial
+est inséré automatiquement. **Changez son mot de passe immédiatement après la
+première connexion.**
 
-## Comptes de démonstration
+## Compte administrateur initial
 
 | Rôle           | Email                       | Mot de passe    |
 |----------------|-----------------------------|-----------------|
 | Administrateur | admin@scolarite.com         | admin123        |
-| Enseignant     | enseignant@scolarite.com    | enseignant123   |
-| Étudiant       | etudiant@scolarite.com      | etudiant123     |
+
+> ⚠️ **Sécurité** : ce compte n'est créé que si la base est vide. Changez le
+> mot de passe dès la première connexion, puis créez les autres comptes
+> (enseignants, étudiants) depuis l'interface d'administration.
 
 ## Configuration (`.env`)
 
@@ -81,25 +84,56 @@ insérées automatiquement (3 comptes + 1 dossier + 2 matières + 6 notes).
 1. Définissez `NODE_ENV=production` et un `JWT_SECRET` long et aléatoire.
 2. Limitez `CORS_ORIGIN` à l'URL publique du frontend.
 3. Utilisez PostgreSQL (`DB_DIALECT=postgres`) pour la persistance en production.
-4. Démarrez avec un gestionnaire de processus : `pm2 start server.js --name soap-backend`.
+4. Démarrez avec un gestionnaire de processus : `pm2 start serveur.js --name soap-backend`.
 
 ## Structure
 
 ```
 backend/
-├── server.js              # Point d'entrée (Express + SOAP + seed auto)
+├── serveur.js             # Point d'entrée (Express + SOAP + seed auto)
 ├── .env.example
-├── wsdl/                  # Contrats WSDL (auth, accounts, students, subjects, notes)
+├── wsdl/                  # Contrats WSDL (auth, comptes, etudiants, matieres, notes)
 ├── src/
-│   ├── config/database.js # Sequelize (SQLite / PostgreSQL)
-│   ├── models/            # User, Etudiant, Matiere, Note
-│   ├── controllers/       # Logique métier + calculs (moyenne, mention, statut)
-│   ├── services/          # Mapping SOAP + RBAC
-│   ├── routes/            # soapRoutes (mount WSDL) + restRoutes (mirror)
-│   ├── middleware/        # authMiddleware (extractUser, requireRole)
-│   └── utils/             # hash (bcrypt), token (JWT), faults (SOAP faults)
+│   ├── config/base-donnees.js   # Sequelize (SQLite / PostgreSQL)
+│   ├── models/                  # Utilisateur, Etudiant, Matiere, Note
+│   ├── controllers/             # controleurAuth, controleurComptes, controleurEtudiants, controleurMatieres, controleurNotes
+│   ├── services/                # serviceAuth, serviceComptes, serviceEtudiants, serviceMatieres, serviceNotes
+│   ├── routes/                  # routesSoap (montage WSDL) + routesRest (miroir REST)
+│   ├── middleware/middlewareAuth.js  # extractUser, requireRole
+│   └── utils/                   # hachage (bcrypt), jeton (JWT), erreurs (SOAP faults)
 └── db/seed.js             # Script de seed autonome
 ```
+
+### Noms des services SOAP (WSDL)
+
+| Service WSDL              | Endpoint                | Opérations |
+|---------------------------|-------------------------|------------|
+| ServiceAuthentification   | `/wsdl`                 | seConnecter, seDeconnecter |
+| ServiceComptes            | `/wsdl/accounts`        | creerCompte, listerComptes, modifierCompte, supprimerCompte |
+| ServiceEtudiants          | `/wsdl/students`        | creerDossier, listerDossiers, consulterDossier, consulterMonDossier, listerMesEtudiants, modifierDossier, supprimerDossier |
+| ServiceMatieres           | `/wsdl/subjects`        | creerMatiere, listerMatieres, listerMesMatieres, modifierMatiere, supprimerMatiere |
+| ServiceNotes              | `/wsdl/notes`           | saisirNote, modifierNote, supprimerNote, consulterNotesEnseignant, consulterMoyennesClasse, consulterMesNotes, consulterMonBilan |
+
+## Collection Postman
+
+Une collection Postman pour tester le service SOAP Notes & Moyennes (Sprint 4)
+est fournie dans `postman/` :
+
+- **`Sprint4-Notes.postman_collection.json`** — 16 requêtes SOAP couvrant tous
+  les besoins fonctionnels (BF10-BF13, BF15-BF18) + les cas d'erreur.
+- **`Scolarite-SOAP-Local.postman_environment.json`** — environnement local
+  (variables `baseUrl`, jetons, IDs).
+
+### Utilisation
+
+1. Ouvrez Postman → Import → importez les deux fichiers JSON.
+2. Sélectionnez l'environnement « Scolarité SOAP — Local ».
+3. Démarrez le backend (`npm run dev`).
+4. Exécutez les requêtes dans l'ordre :
+   - **0. Authentification** → récupère les jetons JWT (sauvegardés automatiquement)
+   - **1. Setup** → récupère les IDs (etudiantId, matiereId)
+   - **BF10-BF18** → teste les opérations de notes et moyennes
+   - **Tests — Cas d'erreur** → valide les faults SOAP (VALEUR_INVALIDE, ACCES_REFUSE…)
 
 ## Règles de gestion (Sprint 4)
 

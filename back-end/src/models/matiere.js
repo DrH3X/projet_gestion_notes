@@ -3,8 +3,8 @@
 // UUID primary key + UUID foreign key to users.id (the enseignant).
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const User = require('./user');
+const sequelize = require('../config/base-donnees');
+const User = require('./utilisateur');
 
 const Matiere = sequelize.define(
   'Matiere',

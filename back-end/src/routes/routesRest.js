@@ -1,4 +1,4 @@
-// src/routes/restRoutes.js
+// src/routes/routesRest.js
 // Convenience REST endpoints (mirror of the SOAP operations).
 //
 // Auth:       /api/auth/*
@@ -10,12 +10,12 @@
 const express = require('express');
 const router = express.Router();
 
-const authController = require('../controllers/authController');
-const accountsController = require('../controllers/accountsController');
-const studentsController = require('../controllers/studentsController');
-const subjectsController = require('../controllers/subjectsController');
-const notesController = require('../controllers/notesController');
-const { authenticate, requireRole } = require('../middleware/authMiddleware');
+const authController = require('../controllers/controleurAuth');
+const accountsController = require('../controllers/controleurComptes');
+const studentsController = require('../controllers/controleurEtudiants');
+const subjectsController = require('../controllers/controleurMatieres');
+const notesController = require('../controllers/controleurNotes');
+const { authenticate, requireRole } = require('../middleware/middlewareAuth');
 
 // ============================================================
 // /api/auth/*

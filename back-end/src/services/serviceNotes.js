@@ -1,13 +1,13 @@
-// src/services/notesService.js
+// src/services/serviceNotes.js
 // SOAP service object for the Notes service (Sprint 4).
 // RBAC:
 //   saisirNote, modifierNote, supprimerNote    → enseignant (responsable de la matière) ou admin
 //   consulterNotesEnseignant, consulterMoyennesClasse → enseignant (ses matières) ou admin
 //   consulterMesNotes, consulterMonBilan       → étudiant (lui-même, id pris du JWT)
 
-const controller = require('../controllers/notesController');
-const { extractUser } = require('../middleware/authMiddleware');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const controller = require('../controllers/controleurNotes');
+const { extractUser } = require('../middleware/middlewareAuth');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 function requireAuthenticated(req) {
   const user = extractUser(req);
@@ -18,8 +18,8 @@ function requireAuthenticated(req) {
 }
 
 const notesService = {
-  NotesService: {
-    NotesPort: {
+  ServiceNotes: {
+    PortNotes: {
       saisirNote: function (args, cb, headers, req) {
         const user = requireAuthenticated(req);
         if (user?.Fault) return cb(user);

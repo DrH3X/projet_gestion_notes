@@ -1,4 +1,4 @@
-// server.js
+// serveur.js
 // SOAP backend (Sprints 1, 2, 3, 4) — production-ready.
 //
 // Configuration via environment variables (see .env.example):
@@ -19,9 +19,9 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { sequelize, User, Etudiant, Matiere, Note } = require('./src/models');
-const { attachSoapService } = require('./src/routes/soapRoutes');
-const restRoutes = require('./src/routes/restRoutes');
-const { hashPassword } = require('./src/utils/hash');
+const { attachSoapService } = require('./src/routes/routesSoap');
+const restRoutes = require('./src/routes/routesRest');
+const { hashPassword } = require('./src/utils/hachage');
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';

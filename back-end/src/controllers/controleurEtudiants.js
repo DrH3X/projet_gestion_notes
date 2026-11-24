@@ -1,10 +1,10 @@
-// src/controllers/studentsController.js
+// src/controllers/controleurEtudiants.js
 // Sprint 3 — Service Étudiants (CRUD on student dossiers).
 // A dossier = User (role=etudiant) + Etudiant academic record (1-1).
 
 const { User, Etudiant } = require('../models');
-const { hashPassword } = require('../utils/hash');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const { hashPassword } = require('../utils/hachage');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 /**
  * Shape a Etudiant row (with its User) into the WSDL Dossier type.

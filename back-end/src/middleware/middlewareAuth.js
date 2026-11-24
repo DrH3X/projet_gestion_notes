@@ -2,8 +2,8 @@
 // Reusable role-based access control middleware.
 // Used by all SOAP services (auth + future sprints) to enforce RBAC.
 
-const { verifyToken } = require('../utils/token');
-const { isBlacklisted } = require('../controllers/authController');
+const { verifyToken } = require('../utils/jeton');
+const { isBlacklisted } = require('../controllers/controleurAuth');
 
 /**
  * Extract the JWT from an HTTP request and return the decoded user

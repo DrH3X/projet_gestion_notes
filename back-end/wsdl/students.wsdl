@@ -4,7 +4,7 @@
                  xmlns:tns="http://scolarite.example.com/students"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  targetNamespace="http://scolarite.example.com/students"
-                 name="StudentsService">
+                 name="ServiceEtudiants">
 
   <wsdl:types>
     <xsd:schema targetNamespace="http://scolarite.example.com/students" elementFormDefault="qualified">
@@ -218,7 +218,7 @@
   </wsdl:message>
 
   <!-- Port Type -->
-  <wsdl:portType name="StudentsPortType">
+  <wsdl:portType name="PortTypeEtudiants">
     <wsdl:operation name="creerDossier">
       <wsdl:documentation>Crée le compte + le dossier étudiant (admin only).</wsdl:documentation>
       <wsdl:input message="tns:creerDossierRequestMessage"/>
@@ -264,7 +264,7 @@
   </wsdl:portType>
 
   <!-- Binding -->
-  <wsdl:binding name="StudentsBinding" type="tns:StudentsPortType">
+  <wsdl:binding name="LiaisonEtudiants" type="tns:PortTypeEtudiants">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="creerDossier">
@@ -312,8 +312,8 @@
   </wsdl:binding>
 
   <!-- Service -->
-  <wsdl:service name="StudentsService">
-    <wsdl:port name="StudentsPort" binding="tns:StudentsBinding">
+  <wsdl:service name="ServiceEtudiants">
+    <wsdl:port name="PortEtudiants" binding="tns:LiaisonEtudiants">
       <soap:address location="http://localhost:3000/wsdl/students"/>
     </wsdl:port>
   </wsdl:service>

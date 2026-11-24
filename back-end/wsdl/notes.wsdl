@@ -4,7 +4,7 @@
                  xmlns:tns="http://scolarite.example.com/notes"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  targetNamespace="http://scolarite.example.com/notes"
-                 name="NotesService">
+                 name="ServiceNotes">
 
   <wsdl:types>
     <xsd:schema targetNamespace="http://scolarite.example.com/notes" elementFormDefault="qualified">
@@ -259,7 +259,7 @@
   </wsdl:message>
 
   <!-- Port Type -->
-  <wsdl:portType name="NotesPortType">
+  <wsdl:portType name="PortTypeNotes">
     <wsdl:operation name="saisirNote">
       <wsdl:documentation>Saisit une note pour un étudiant sur une matière (enseignant responsable, BF10).</wsdl:documentation>
       <wsdl:input message="tns:saisirNoteRequestMessage"/>
@@ -305,7 +305,7 @@
   </wsdl:portType>
 
   <!-- Binding -->
-  <wsdl:binding name="NotesBinding" type="tns:NotesPortType">
+  <wsdl:binding name="LiaisonNotes" type="tns:PortTypeNotes">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="saisirNote">
@@ -353,8 +353,8 @@
   </wsdl:binding>
 
   <!-- Service -->
-  <wsdl:service name="NotesService">
-    <wsdl:port name="NotesPort" binding="tns:NotesBinding">
+  <wsdl:service name="ServiceNotes">
+    <wsdl:port name="PortNotes" binding="tns:LiaisonNotes">
       <soap:address location="http://localhost:3001/wsdl/notes"/>
     </wsdl:port>
   </wsdl:service>

@@ -1,0 +1,593 @@
+{
+  "info": {
+    "_postman_id": "sprint4-notes-collection",
+    "name": "Scolarité SOAP — Sprint 4 (Notes & Moyennes)",
+    "description": "Collection Postman pour tester le service SOAP Notes & Moyennes (Sprint 4).\n\nCouvre les besoins fonctionnels :\n- BF10 : saisir une note (enseignant)\n- BF11 : modifier une note (enseignant)\n- BF12 : consulter les notes (enseignant)\n- BF13 : consulter les moyennes de classe (enseignant)\n- BF15 : consulter ses notes (étudiant)\n- BF16/17/18 : consulter sa moyenne, mention et statut (étudiant)\n\n## Pré-requis\n\n1. Démarrez le backend SOAP : `cd backend && npm install && npm run dev` (port 3001 par défaut).\n2. La base est auto-seedée au premier démarrage (comptes + matières + notes).\n3. Exécutez les requêtes dans l'ordre : le dossier « 0. Authentification » récupère les jetons JWT, le dossier « 1. Setup » récupère les IDs nécessaires.\n\n## Variables de collection\n\nLes jetons et IDs sont extraits automatiquement par les scripts de test (onglet Tests de chaque requête). Vous pouvez aussi les définir manuellement dans l'onglet Variables de la collection.\n\n## Format SOAP\n\nToutes les requêtes envoient des messages SOAP/XML (Content-Type: text/xml) conformes aux contrats WSDL du backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001", "type": "string" },
+    { "key": "teacherToken", "value": "", "type": "string" },
+    { "key": "studentToken", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "etudiantId", "value": "", "type": "string" },
+    { "key": "matiereId", "value": "", "type": "string" },
+    { "key": "noteId", "value": "", "type": "string" },
+    { "key": "classe", "value": "3A", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0. Authentification",
+      "description": "Récupère les jetons JWT pour chaque rôle. Exécutez ces requêtes en premier — les jetons sont sauvegardés automatiquement dans les variables de collection.",
+      "item": [
+        {
+          "name": "seConnecter (Enseignant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Statut 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.text();",
+                  "var match = body.match(/<jeton>([^<]+)<\\/jeton>/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('teacherToken', match[1]);",
+                  "    console.log('Teacher token saved');",
+                  "} else {",
+                  "    pm.expect.fail('Aucun jeton dans la réponse SOAP');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/auth/seConnecter\"" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/auth\">\n  <soap:Body>\n    <tns:seConnecter>\n      <tns:email>enseignant@scolarite.com</tns:email>\n      <tns:motDePasse>enseignant123</tns:motDePasse>\n    </tns:seConnecter>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl"]
+            },
+            "description": "Authentifie l'enseignant et récupère un jeton JWT. Le jeton est automatiquement sauvegardé dans la variable `teacherToken`."
+          }
+        },
+        {
+          "name": "seConnecter (Étudiant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Statut 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.text();",
+                  "var match = body.match(/<jeton>([^<]+)<\\/jeton>/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('studentToken', match[1]);",
+                  "    console.log('Student token saved');",
+                  "} else {",
+                  "    pm.expect.fail('Aucun jeton dans la réponse SOAP');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/auth/seConnecter\"" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/auth\">\n  <soap:Body>\n    <tns:seConnecter>\n      <tns:email>etudiant@scolarite.com</tns:email>\n      <tns:motDePasse>etudiant123</tns:motDePasse>\n    </tns:seConnecter>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl"]
+            },
+            "description": "Authentifie l'étudiant et récupère un jeton JWT. Le jeton est automatiquement sauvegardé dans la variable `studentToken`."
+          }
+        },
+        {
+          "name": "seConnecter (Administrateur)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Statut 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.text();",
+                  "var match = body.match(/<jeton>([^<]+)<\\/jeton>/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('adminToken', match[1]);",
+                  "    console.log('Admin token saved');",
+                  "} else {",
+                  "    pm.expect.fail('Aucun jeton dans la réponse SOAP');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/auth/seConnecter\"" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/auth\">\n  <soap:Body>\n    <tns:seConnecter>\n      <tns:email>admin@scolarite.com</tns:email>\n      <tns:motDePasse>admin123</tns:motDePasse>\n    </tns:seConnecter>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl"]
+            },
+            "description": "Authentifie l'administrateur et récupère un jeton JWT. Le jeton est automatiquement sauvegardé dans la variable `adminToken`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Setup — Récupérer les IDs",
+      "description": "Récupère les IDs nécessaires (etudiantId, matiereId) pour les opérations de notes. Exécutez après le dossier « 0. Authentification ».",
+      "item": [
+        {
+          "name": "listerDossiers → etudiantId (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Statut 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.text();",
+                  "var match = body.match(/<dossier>[\\s\\S]*?<id>([^<]+)<\\/id>/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('etudiantId', match[1]);",
+                  "    console.log('etudiantId = ' + match[1]);",
+                  "} else {",
+                  "    console.log('Aucun dossier trouvé — utilisez une autre valeur pour etudiantId');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/students/listerDossiers\"" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/students\">\n  <soap:Body>\n    <tns:listerDossiers/>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/students",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "students"]
+            },
+            "description": "Liste tous les dossiers étudiants (admin only). Le premier ID trouvé est sauvegardé dans `etudiantId`."
+          }
+        },
+        {
+          "name": "listerMatieres → matiereId (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Statut 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.text();",
+                  "var match = body.match(/<matiere>[\\s\\S]*?<id>([^<]+)<\\/id>/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('matiereId', match[1]);",
+                  "    console.log('matiereId = ' + match[1]);",
+                  "} else {",
+                  "    console.log('Aucune matière trouvée');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/subjects/listerMatieres\"" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/subjects\">\n  <soap:Body>\n    <tns:listerMatieres/>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/subjects",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "subjects"]
+            },
+            "description": "Liste toutes les matières. Le premier ID trouvé est sauvegardé dans `matiereId`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "BF10 — saisirNote (Enseignant)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Statut 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Note créée (pas de SOAP Fault)', function () {",
+              "    pm.expect(pm.response.text()).to.not.include('<soap:Fault');",
+              "});",
+              "var body = pm.response.text();",
+              "var match = body.match(/<note>[\\s\\S]*?<id>([^<]+)<\\/id>/);",
+              "if (match) {",
+              "    pm.collectionVariables.set('noteId', match[1]);",
+              "    console.log('noteId = ' + match[1]);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/saisirNote\"" },
+          { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:saisirNote>\n      <tns:etudiantId>{{etudiantId}}</tns:etudiantId>\n      <tns:matiereId>{{matiereId}}</tns:matiereId>\n      <tns:valeur>15.5</tns:valeur>\n      <tns:type>DS</tns:type>\n    </tns:saisirNote>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF10 — L'enseignant saisit une note pour un étudiant sur une matière.\n\n**Règles** :\n- valeur ∈ [0, 20] (sinon VALEUR_INVALIDE)\n- type ∈ {DS, examen, TP}\n- L'enseignant doit être responsable de la matière (sinon ACCES_REFUSE)\n- Une seule note par (étudiant, matière, type) (sinon DOUBLON)\n\nL'ID de la note créée est sauvegardé dans `noteId` pour les tests suivants (modifierNote, supprimerNote).\n\n⚠️ Si l'étudiant a déjà une note DS dans cette matière, vous obtiendrez une fault DOUBLON. Changez le type (examen ou TP) ou supprimez la note existante d'abord."
+      }
+    },
+    {
+      "name": "BF11 — modifierNote (Enseignant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/modifierNote\"" },
+          { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:modifierNote>\n      <tns:id>{{noteId}}</tns:id>\n      <tns:valeur>17</tns:valeur>\n    </tns:modifierNote>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF11 — L'enseignant modifie la valeur d'une note existante.\n\n**Règles** :\n- valeur ∈ [0, 20]\n- L'enseignant doit être responsable de la matière de la note (sinon ACCES_REFUSE)\n- La moyenne, mention et statut de l'étudiant sont **recalculés automatiquement** après modification.\n\n⚠️ Nécessite `noteId` — exécutez d'abord « BF10 — saisirNote »."
+      }
+    },
+    {
+      "name": "BF12 — consulterNotesEnseignant (Enseignant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterNotesEnseignant\"" },
+          { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterNotesEnseignant/>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF12 — L'enseignant consulte toutes les notes de ses matières.\n\nFiltres optionnels (ajoutez-les dans le body) :\n- `<tns:matiereId>...</tns:matiereId>` — filtrer par matière\n- `<tns:etudiantId>...</tns:etudiantId>` — filtrer par étudiant\n\nNe renvoie que les notes des matières dont l'enseignant connecté est responsable."
+      }
+    },
+    {
+      "name": "BF13 — consulterMoyennesClasse (Enseignant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterMoyennesClasse\"" },
+          { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterMoyennesClasse/>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF13 — L'enseignant consulte les bilans (moyenne/mention/statut) des étudiants qui ont au moins une note dans ses matières.\n\nFiltre optionnel (ajoutez dans le body) :\n- `<tns:classe>3A</tns:classe>` — filtrer par classe\n\nChaque bilan contient : etudiantId, nom, prénom, classe, moyenne, mention, statut, nbMatieres.\n\n**Règles de calcul** :\n- Moyenne = Σ(moyMatière × coefficient) / Σ(coefficients)\n- Mention : passable [10,12[, assez_bien [12,14[, bien [14,16[, très_bien ≥16\n- Statut : admis si moyenne ≥ 10, ajourné sinon"
+      }
+    },
+    {
+      "name": "BF15 — consulterMesNotes (Étudiant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterMesNotes\"" },
+          { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterMesNotes/>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF15 — L'étudiant consulte toutes ses notes.\n\nL'ID de l'étudiant est récupéré automatiquement depuis le jeton JWT — aucun paramètre à fournir.\n\nRéservé au rôle étudiant (sinon ACCES_REFUSE)."
+      }
+    },
+    {
+      "name": "BF16/17/18 — consulterMonBilan (Étudiant)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Statut 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Bilan reçu', function () {",
+              "    var body = pm.response.text();",
+              "    pm.expect(body).to.include('<bilan');",
+              "    pm.expect(body).to.include('<moyenne');",
+              "    pm.expect(body).to.include('<mention');",
+              "    pm.expect(body).to.include('<statut');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterMonBilan\"" },
+          { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterMonBilan/>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "BF16/17/18 — L'étudiant consulte sa moyenne générale, sa mention et son statut.\n\nL'ID de l'étudiant est récupéré depuis le jeton JWT.\n\nLe bilan contient :\n- **moyenne** (BF16) — moyenne générale pondérée par les coefficients\n- **mention** (BF17) — passable / assez_bien / bien / très_bien / ajourne\n- **statut** (BF18) — admis / ajourné\n- etudiantId, nom, prénom, classe, nbMatieres\n\nRéservé au rôle étudiant (sinon ACCES_REFUSE)."
+      }
+    },
+    {
+      "name": "supprimerNote (Enseignant)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/supprimerNote\"" },
+          { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:supprimerNote>\n      <tns:id>{{noteId}}</tns:id>\n    </tns:supprimerNote>\n  </soap:Body>\n</soap:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wsdl/notes",
+          "host": ["{{baseUrl}}"],
+              "path": ["wsdl", "notes"]
+        },
+        "description": "Supprime une note existante.\n\n- L'enseignant doit être responsable de la matière de la note (sinon ACCES_REFUSE)\n- La moyenne/mention/statut de l'étudiant sont recalculés automatiquement.\n\n⚠️ Nécessite `noteId` — exécutez d'abord « BF10 — saisirNote »."
+      }
+    },
+    {
+      "name": "Tests — Cas d'erreur",
+      "description": "Requêtes de validation des faults SOAP (cas limites).",
+      "item": [
+        {
+          "name": "saisirNote — valeur > 20 (VALEUR_INVALIDE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('SOAP Fault VALEUR_INVALIDE', function () {",
+                  "    var body = pm.response.text();",
+                  "    pm.expect(body).to.include('Fault');",
+                  "    pm.expect(body).to.include('VALEUR_INVALIDE');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/saisirNote\"" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:saisirNote>\n      <tns:etudiantId>{{etudiantId}}</tns:etudiantId>\n      <tns:matiereId>{{matiereId}}</tns:matiereId>\n      <tns:valeur>25</tns:valeur>\n      <tns:type>DS</tns:type>\n    </tns:saisirNote>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/notes",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "notes"]
+            },
+            "description": "Tente de saisir une note de 25 (> 20). Doit retourner une SOAP Fault avec le code VALEUR_INVALIDE."
+          }
+        },
+        {
+          "name": "saisirNote — type invalide (VALEUR_INVALIDE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('SOAP Fault VALEUR_INVALIDE', function () {",
+                  "    var body = pm.response.text();",
+                  "    pm.expect(body).to.include('Fault');",
+                  "    pm.expect(body).to.include('VALEUR_INVALIDE');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/saisirNote\"" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:saisirNote>\n      <tns:etudiantId>{{etudiantId}}</tns:etudiantId>\n      <tns:matiereId>{{matiereId}}</tns:matiereId>\n      <tns:valeur>14</tns:valeur>\n      <tns:type>oral</tns:type>\n    </tns:saisirNote>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/notes",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "notes"]
+            },
+            "description": "Tente de saisir une note avec un type invalide (« oral » au lieu de DS/examen/TP). Doit retourner VALEUR_INVALIDE."
+          }
+        },
+        {
+          "name": "consulterMesNotes — sans jeton (ACCES_REFUSE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('SOAP Fault ACCES_REFUSE', function () {",
+                  "    var body = pm.response.text();",
+                  "    pm.expect(body).to.include('Fault');",
+                  "    pm.expect(body).to.include('ACCES_REFUSE');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterMesNotes\"" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterMesNotes/>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/notes",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "notes"]
+            },
+            "description": "Tente de consulter ses notes sans jeton JWT. Doit retourner ACCES_REFUSE."
+          }
+        },
+        {
+          "name": "consulterMonBilan — enseignant (ACCES_REFUSE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('SOAP Fault ACCES_REFUSE', function () {",
+                  "    var body = pm.response.text();",
+                  "    pm.expect(body).to.include('Fault');",
+                  "    pm.expect(body).to.include('ACCES_REFUSE');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "\"http://scolarite.example.com/notes/consulterMonBilan\"" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://scolarite.example.com/notes\">\n  <soap:Body>\n    <tns:consulterMonBilan/>\n  </soap:Body>\n</soap:Envelope>",
+              "options": { "raw": { "language": "xml" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wsdl/notes",
+              "host": ["{{baseUrl}}"],
+                  "path": ["wsdl", "notes"]
+            },
+            "description": "Un enseignant tente de consulter son bilan étudiant. Doit retourner ACCES_REFUSE (réservé aux étudiants)."
+          }
+        }
+      ]
+    }
+  ]
+}

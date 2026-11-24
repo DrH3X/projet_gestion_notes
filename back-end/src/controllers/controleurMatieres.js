@@ -1,8 +1,8 @@
-// src/controllers/subjectsController.js
+// src/controllers/controleurMatieres.js
 // Sprint 3 — Service Matières (CRUD + affectation de l'enseignant).
 
 const { Matiere, User } = require('../models');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 /**
  * Shape a Matiere row (with its teacher) into the WSDL Matiere type.

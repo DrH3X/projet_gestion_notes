@@ -1,12 +1,12 @@
-// src/services/authService.js
+// src/services/serviceAuth.js
 // SOAP service object: maps WSDL operations -> controller functions.
 // The `soap` library calls these methods when a SOAP request arrives.
 
-const controller = require('../controllers/authController');
+const controller = require('../controllers/controleurAuth');
 
 const authService = {
-  AuthService: {
-    AuthPort: {
+  ServiceAuthentification: {
+    PortAuthentification: {
       // seConnecter(args, callback)
       seConnecter: function (args, cb) {
         controller

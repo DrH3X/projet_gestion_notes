@@ -1,4 +1,4 @@
-// src/controllers/notesController.js
+// src/controllers/controleurNotes.js
 // Sprint 4 — Service Notes & Moyennes (BF10-BF13, BF15-BF18).
 //
 // Règles de gestion (cahier des charges §4.5) :
@@ -17,7 +17,7 @@
 //     toujours calculés à la volée à partir des notes courantes).
 
 const { Note, Etudiant, Matiere, User } = require('../models');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 const VALID_TYPES = ['DS', 'examen', 'TP'];
 

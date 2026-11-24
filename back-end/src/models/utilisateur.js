@@ -3,7 +3,7 @@
 // Primary key is a UUID v4 (not an incremental integer).
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../config/base-donnees');
 
 const User = sequelize.define(
   'User',

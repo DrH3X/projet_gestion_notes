@@ -1,12 +1,12 @@
-// src/services/studentsService.js
+// src/services/serviceEtudiants.js
 // SOAP service object for the Students service (Sprint 3).
 // RBAC:
 //   creerDossier, listerDossiers, modifierDossier, supprimerDossier → admin only
 //   consulterDossier → admin, enseignant, or self (étudiant viewing own dossier)
 
-const controller = require('../controllers/studentsController');
-const { extractUser } = require('../middleware/authMiddleware');
-const { buildFault, FaultCodes } = require('../utils/faults');
+const controller = require('../controllers/controleurEtudiants');
+const { extractUser } = require('../middleware/middlewareAuth');
+const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 function requireAdmin(req) {
   const user = extractUser(req);
@@ -28,8 +28,8 @@ function requireAuthenticated(req) {
 }
 
 const studentsService = {
-  StudentsService: {
-    StudentsPort: {
+  ServiceEtudiants: {
+    PortEtudiants: {
       creerDossier: function (args, cb, headers, req) {
         const fault = requireAdmin(req);
         if (fault) return cb(fault);

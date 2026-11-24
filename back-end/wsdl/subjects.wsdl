@@ -4,7 +4,7 @@
                  xmlns:tns="http://scolarite.example.com/subjects"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                  targetNamespace="http://scolarite.example.com/subjects"
-                 name="SubjectsService">
+                 name="ServiceMatieres">
 
   <wsdl:types>
     <xsd:schema targetNamespace="http://scolarite.example.com/subjects" elementFormDefault="qualified">
@@ -155,7 +155,7 @@
   </wsdl:message>
 
   <!-- Port Type -->
-  <wsdl:portType name="SubjectsPortType">
+  <wsdl:portType name="PortTypeMatieres">
     <wsdl:operation name="creerMatiere">
       <wsdl:documentation>Crée une matière + affecte l'enseignant responsable (admin only, BF5).</wsdl:documentation>
       <wsdl:input message="tns:creerMatiereRequestMessage"/>
@@ -189,7 +189,7 @@
   </wsdl:portType>
 
   <!-- Binding -->
-  <wsdl:binding name="SubjectsBinding" type="tns:SubjectsPortType">
+  <wsdl:binding name="LiaisonMatieres" type="tns:PortTypeMatieres">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="creerMatiere">
@@ -225,8 +225,8 @@
   </wsdl:binding>
 
   <!-- Service -->
-  <wsdl:service name="SubjectsService">
-    <wsdl:port name="SubjectsPort" binding="tns:SubjectsBinding">
+  <wsdl:service name="ServiceMatieres">
+    <wsdl:port name="PortMatieres" binding="tns:LiaisonMatieres">
       <soap:address location="http://localhost:3000/wsdl/subjects"/>
     </wsdl:port>
   </wsdl:service>

@@ -10,8 +10,10 @@ import {
   Trash2,
   Loader2,
   ClipboardList,
+  RefreshCw,
 } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { useSectionsClasses } from "@/hooks/use-sections-classes";
 import { useAsync } from "@/hooks/use-async";
 import { toast } from "sonner";
 import { SectionHeader } from "@/components/shared/section-header";
@@ -359,6 +361,7 @@ export function TeacherGrades() {
           studentsLoading={students.loading}
           subjectsError={subjects.error}
           studentsError={students.error}
+          onReloadStudents={students.refetch}
           submitting={submitting}
           onClose={() => setCreateOpen(false)}
           onSubmit={onCreate}
@@ -410,6 +413,7 @@ interface NoteCreateDialogProps {
   studentsLoading: boolean;
   subjectsError: SoapFault | null;
   studentsError: SoapFault | null;
+  onReloadStudents: () => Promise<void>;
   submitting: boolean;
   onClose: () => void;
   onSubmit: (v: CreateValues) => Promise<void> | void;
@@ -422,6 +426,7 @@ function NoteCreateDialog({
   studentsLoading,
   subjectsError,
   studentsError,
+  onReloadStudents,
   submitting,
   onClose,
   onSubmit,
@@ -445,6 +450,17 @@ function NoteCreateDialog({
   const etudiantId = watch("etudiantId");
   const matiereId = watch("matiereId");
   const type = watch("type");
+  const { sections, classes, loading: sectionsClassesLoading } = useSectionsClasses();
+  const [selectedSectionId, setSelectedSectionId] = useState("");
+  const [selectedClasseId, setSelectedClasseId] = useState("");
+  const filteredClasses = selectedSectionId
+    ? classes.filter((classe) => classe.sectionId === selectedSectionId)
+    : classes;
+  const filteredStudents = students.filter((student) => {
+    if (selectedSectionId && student.sectionId !== selectedSectionId) return false;
+    if (selectedClasseId && student.classeId !== selectedClasseId) return false;
+    return true;
+  });
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -453,6 +469,60 @@ function NoteCreateDialog({
           <DialogTitle>Nouvelle note</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Section">
+              <Select
+                value={selectedSectionId || "all"}
+                onValueChange={(value) => {
+                  setSelectedSectionId(value === "all" ? "" : value);
+                  setSelectedClasseId("");
+                  setValue("etudiantId", "");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les sections" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les sections</SelectItem>
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id}>{section.nom}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Classe">
+              <Select
+                value={selectedClasseId || "all"}
+                onValueChange={(value) => {
+                  setSelectedClasseId(value === "all" ? "" : value);
+                  setValue("etudiantId", "");
+                }}
+                disabled={sectionsClassesLoading || filteredClasses.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
+                  {filteredClasses.map((classe) => (
+                    <SelectItem key={classe.id} value={classe.id}>{classe.nom}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onReloadStudents}
+              disabled={studentsLoading}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${studentsLoading ? "animate-spin" : ""}`} />
+              Recharger les étudiants
+            </Button>
+          </div>
           <Field label="Étudiant" error={errors.etudiantId?.message}>
             {studentsError ? (
               <p className="text-xs text-destructive">
@@ -472,12 +542,12 @@ function NoteCreateDialog({
                   <SelectValue placeholder="Sélectionner un étudiant…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {students.length === 0 ? (
+                  {filteredStudents.length === 0 ? (
                     <SelectItem value="none" disabled>
-                      Aucun étudiant disponible
+                      Aucun étudiant pour cette section/classe
                     </SelectItem>
                   ) : (
-                    students.map((s) => (
+                    filteredStudents.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.nom} {s.prenom}
                         {s.classe ? ` — ${s.classe}` : ""}

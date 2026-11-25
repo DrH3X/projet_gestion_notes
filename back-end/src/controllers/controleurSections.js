@@ -542,50 +542,17 @@ async function assignerEnseignantClasses(args) {
 async function consulterAffectationsEnseignant(args) {
   const { userId } = args || {};
 
-  const user = await getTeacher(userId);
+  await getTeacher(userId);
 
-  let sections = await EnseignantSection.findAll({
+  const sections = await EnseignantSection.findAll({
     where: { userId },
     include: [{ model: Section, as: 'section' }],
   });
 
-  let classes = await EnseignantClasse.findAll({
+  const classes = await EnseignantClasse.findAll({
     where: { userId },
     include: [{ model: Classe, as: 'classe' }],
   });
-
-  // Compatibilité avec les anciens comptes : avant l'enregistrement des tables
-  // de liaison, la création stockait seulement le nom de classe dans User.classe.
-  // Si ce nom correspond à une seule classe, reconstituer l'affectation une fois.
-  if (sections.length === 0 && classes.length === 0 && user.classe) {
-    const matchingClasses = await Classe.findAll({
-      where: { nom: user.classe },
-      include: [{ model: Section, as: 'section' }],
-    });
-
-    if (matchingClasses.length === 1) {
-      const legacyClasse = matchingClasses[0];
-      await EnseignantClasse.findOrCreate({
-        where: { userId, classeId: legacyClasse.id },
-        defaults: { userId, classeId: legacyClasse.id },
-      });
-      if (legacyClasse.sectionId) {
-        await EnseignantSection.findOrCreate({
-          where: { userId, sectionId: legacyClasse.sectionId },
-          defaults: { userId, sectionId: legacyClasse.sectionId },
-        });
-      }
-
-      sections = await EnseignantSection.findAll({
-        where: { userId },
-        include: [{ model: Section, as: 'section' }],
-      });
-      classes = await EnseignantClasse.findAll({
-        where: { userId },
-        include: [{ model: Classe, as: 'classe' }],
-      });
-    }
-  }
 
   return {
     affectations: {

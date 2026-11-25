@@ -112,27 +112,6 @@ export function AdminAccounts() {
       }
       await api.accounts.create(body);
 
-      // La création d'un enseignant ne crée pas automatiquement ses lignes
-      // d'affectation : les enregistrer explicitement pour l'interface Sections & Classes.
-      if (values.role === "enseignant") {
-        const sectionId = (values as any).sectionId as string | undefined;
-        const classeId = (values as any).classeId as string | undefined;
-        if (sectionId || classeId) {
-          const createdTeachers = await api.accounts.list("enseignant") as Compte[];
-          const createdTeacher = (Array.isArray(createdTeachers) ? createdTeachers : [])
-            .find((teacher) => teacher.email.toLowerCase() === values.email.toLowerCase());
-
-          if (createdTeacher) {
-            const assignments = [];
-            if (sectionId) assignments.push(api.sections.assignTeacherSections(createdTeacher.id, [sectionId]));
-            if (classeId) assignments.push(api.sections.assignTeacherClasses(createdTeacher.id, [classeId]));
-            await Promise.all(assignments);
-          } else {
-            throw new Error("Compte enseignant créé, mais impossible de retrouver son identifiant pour enregistrer ses affectations.");
-          }
-        }
-      }
-
       toast.success("Compte créé avec succès");
       setCreateOpen(false);
       await reload();

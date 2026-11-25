@@ -452,8 +452,6 @@ function NoteCreateDialog({
         <DialogHeader>
           <DialogTitle>Nouvelle note</DialogTitle>
           <DialogDescription>
-            Saisie d'une note (opération SOAP saisirNote). Une seule note par
-            triplet (étudiant, matière, type).
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

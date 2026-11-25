@@ -131,7 +131,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <footer className="mt-auto border-t border-border bg-card/50">
           <div className="px-4 sm:px-6 lg:px-8 py-4 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
             <p>Scolarité — Plateforme de gestion académique</p>
-            <p>Connecté via SOAP/XML · Authentification JWT</p>
           </div>
         </footer>
       </div>

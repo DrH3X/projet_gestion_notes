@@ -42,6 +42,8 @@
             <xsd:element name="motDePasse" type="xsd:string"/>
             <xsd:element name="role" type="tns:Role"/>
             <xsd:element name="classe" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="sectionId" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="classeId" type="xsd:string" minOccurs="0"/>
             <xsd:element name="matricule" type="xsd:string" minOccurs="0"/>
             <xsd:element name="dateNaissance" type="xsd:date" minOccurs="0"/>
             <xsd:element name="adresse" type="xsd:string" minOccurs="0"/>

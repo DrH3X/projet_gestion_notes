@@ -380,12 +380,22 @@ function CreateAccountDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit((vals) => {
               const enhanced: any = { ...vals };
-              if (editSectionId) enhanced.sectionId = editSectionId;
-              if (editClasseId) {
-                enhanced.classeId = editClasseId;
-                const c = editAllClasses.find((x) => x.id === editClasseId);
-                if (c) enhanced.classe = c.nom;
-              }
+
+if (selectedSectionId) {
+  enhanced.sectionId = selectedSectionId;
+}
+
+if (selectedClasseId) {
+  enhanced.classeId = selectedClasseId;
+
+  const c = allClasses.find((x) => x.id === selectedClasseId);
+
+  if (c) {
+    enhanced.classe = c.nom;
+  }
+}
+
+return onSubmit(enhanced as CreateValues);
               return onSubmit(enhanced as EditValues);
             })} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">

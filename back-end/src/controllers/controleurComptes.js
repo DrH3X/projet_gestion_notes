@@ -3,7 +3,13 @@
 // CRUD operations: creerCompte, listerComptes, modifierCompte, supprimerCompte
 // All operations are restricted to role "administrateur" (enforced in the service).
 
-const { User, Etudiant } = require('../models');
+const {
+  sequelize,
+  User,
+  Etudiant,
+  Section,
+  Classe,
+} = require('../models');
 const { hashPassword } = require('../utils/hachage');
 const { buildFault, FaultCodes } = require('../utils/erreurs');
 
@@ -35,53 +41,148 @@ function toCompte(user) {
  * guaranteed unique — it is never accepted from the caller.
  * Output: { compte }
  */
-async function creerCompte({ nom, prenom, email, motDePasse, role, classe, dateNaissance, adresse }) {
-  // 1. Validate required fields (matricule is NOT accepted — auto-generated)
+async function creerCompte(args) {
+  const {
+    nom,
+    prenom,
+    email,
+    motDePasse,
+    role,
+    classe,
+    sectionId,
+    classeId,
+    dateNaissance,
+    adresse,
+  } = args || {};
+
+  // 1. Vérifier les champs obligatoires
   const missing = [];
+
   if (!nom) missing.push('nom');
   if (!prenom) missing.push('prenom');
   if (!email) missing.push('email');
   if (!motDePasse) missing.push('motDePasse');
   if (!role) missing.push('role');
+
   if (missing.length) {
-    throw buildFault(FaultCodes.CHAMP_MANQUANT, 'Champs obligatoires manquants', missing);
+    throw buildFault(
+      FaultCodes.CHAMP_MANQUANT,
+      'Champs obligatoires manquants',
+      missing
+    );
   }
 
-  // 2. Validate role value
+  // 2. Vérifier le rôle
   if (!VALID_ROLES.includes(role)) {
-    throw buildFault(FaultCodes.VALEUR_INVALIDE, `Rôle invalide: ${role}. Valeurs attendues: ${VALID_ROLES.join(', ')}`);
+    throw buildFault(
+      FaultCodes.VALEUR_INVALIDE,
+      `Rôle invalide : ${role}`
+    );
   }
 
-  // 3. Validate email uniqueness
-  const exists = await User.findOne({ where: { email } });
-  if (exists) {
-    throw buildFault(FaultCodes.DOUBLON, `Un compte existe déjà avec l'email ${email}`);
-  }
-
-  // 4. Hash password + create the account
-  const hashed = await hashPassword(motDePasse);
-  const user = await User.create({
-    nom,
-    prenom,
-    email,
-    motDePasse: hashed,
-    role,
-    classe: classe || null,
+  // 3. Vérifier l'unicité de l'email
+  const existingUser = await User.findOne({
+    where: { email },
   });
 
-  // 5. For a student, ALWAYS create the academic dossier (Etudiant) with an
-  //    auto-generated matricule. The matricule is never user-supplied.
-  if (role === 'etudiant') {
-    const finalMatricule = await generateUniqueMatricule();
-    await Etudiant.create({
-      userId: user.id,
-      matricule: finalMatricule,
-      dateNaissance: dateNaissance || null,
-      adresse: adresse || null,
-    });
+  if (existingUser) {
+    throw buildFault(
+      FaultCodes.DOUBLON,
+      `Un compte existe déjà avec l'email ${email}`
+    );
   }
 
-  return { compte: toCompte(user) };
+  // 4. Normaliser les identifiants
+  const finalSectionId = sectionId || null;
+  const finalClasseId = classeId || null;
+
+  let selectedSection = null;
+  let selectedClasse = null;
+
+  // 5. Vérifier les affectations d'un étudiant
+  if (role === 'etudiant') {
+    if (!finalSectionId || !finalClasseId) {
+      throw buildFault(
+        FaultCodes.CHAMP_MANQUANT,
+        'La section et la classe sont obligatoires pour un étudiant',
+        [
+          ...(!finalSectionId ? ['sectionId'] : []),
+          ...(!finalClasseId ? ['classeId'] : []),
+        ]
+      );
+    }
+
+    selectedSection = await Section.findByPk(finalSectionId);
+
+    if (!selectedSection) {
+      throw buildFault(
+        FaultCodes.INTROUVABLE,
+        'Section introuvable'
+      );
+    }
+
+    selectedClasse = await Classe.findByPk(finalClasseId);
+
+    if (!selectedClasse) {
+      throw buildFault(
+        FaultCodes.INTROUVABLE,
+        'Classe introuvable'
+      );
+    }
+
+    // Vérifier que la classe appartient à la section choisie
+    if (String(selectedClasse.sectionId) !== String(selectedSection.id)) {
+      throw buildFault(
+        FaultCodes.VALEUR_INVALIDE,
+        'La classe sélectionnée ne correspond pas à la section choisie'
+      );
+    }
+  }
+
+  // 6. Générer le matricule de l'étudiant
+  const matricule =
+    role === 'etudiant'
+      ? await generateUniqueMatricule()
+      : null;
+
+  // 7. Créer le compte et son dossier dans une transaction
+  return sequelize.transaction(async (transaction) => {
+    const user = await User.create(
+      {
+        nom,
+        prenom,
+        email,
+        motDePasse: await hashPassword(motDePasse),
+        role,
+        classe:
+          role === 'etudiant'
+            ? selectedClasse.nom
+            : classe || null,
+      },
+      { transaction }
+    );
+
+    // 8. Enregistrer les identifiants académiques
+    if (role === 'etudiant') {
+      await Etudiant.create(
+        {
+          userId: user.id,
+          matricule,
+          dateNaissance: dateNaissance || null,
+          adresse: adresse || null,
+
+          // Les deux champs essentiels
+          sectionId: selectedSection.id,
+          classeId: selectedClasse.id,
+        },
+        { transaction }
+      );
+    }
+
+    return {
+      compte: toCompte(user),
+    };
+  });
 }
 
 /**

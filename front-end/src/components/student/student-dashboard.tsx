@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -52,14 +53,18 @@ interface MatiereRow {
 
 function groupNotesByMatiere(notes: Note[]): MatiereRow[] {
   const byMatiere = new Map<string, Note[]>();
+
   for (const n of notes) {
     const arr = byMatiere.get(n.matiereId) ?? [];
     arr.push(n);
     byMatiere.set(n.matiereId, arr);
   }
+
   const rows: MatiereRow[] = [];
+
   for (const [matiereId, ns] of byMatiere) {
     const somme = ns.reduce((s, n) => s + n.valeur, 0);
+
     rows.push({
       matiereId,
       matiereIntitule: ns[0]?.matiereIntitule ?? "—",
@@ -68,15 +73,18 @@ function groupNotesByMatiere(notes: Note[]): MatiereRow[] {
       moyenne: somme / ns.length,
     });
   }
-  return rows.sort((a, b) => a.matiereIntitule.localeCompare(b.matiereIntitule));
+
+  return rows.sort((a, b) =>
+    a.matiereIntitule.localeCompare(b.matiereIntitule)
+  );
 }
 
 function barColorForMoyenne(m: number): string {
-  if (m >= 16) return "oklch(0.68 0.15 162)"; // tres_bien — emerald
-  if (m >= 14) return "oklch(0.55 0.19 259)"; // bien — primary navy
-  if (m >= 12) return "oklch(0.7 0.13 230)"; // assez_bien — sky
-  if (m >= 10) return "oklch(0.78 0.16 70)"; // passable — amber
-  return "oklch(0.58 0.22 27)"; // ajourne — rose
+  if (m >= 16) return "oklch(0.68 0.15 162)";
+  if (m >= 14) return "oklch(0.55 0.19 259)";
+  if (m >= 12) return "oklch(0.7 0.13 230)";
+  if (m >= 10) return "oklch(0.78 0.16 70)";
+  return "oklch(0.58 0.22 27)";
 }
 
 export function StudentDashboard() {
@@ -137,16 +145,36 @@ export function StudentDashboard() {
 
   const dossier = me.data;
   const b = bilan.data;
+
   const prenom = dossier?.prenom ?? user?.prenom ?? "";
   const nom = dossier?.nom ?? user?.nom ?? "";
-  const classe = dossier?.classe ?? user?.classe ?? "—";
+
+  // Prefer the names returned by the student's dossier.
+  const section = dossier?.sectionNom || "Non affectée";
+
+  const classe =
+    dossier?.classeNom ||
+    dossier?.classe ||
+    user?.classe ||
+    "Non affectée";
+
   const matricule = dossier?.matricule ?? "—";
 
   const moyenne = b?.moyenne ?? null;
-  const mention = b?.mention ?? (moyenne !== null ? computeMention(moyenne) : null);
-  const statut = b?.statut ?? (moyenne !== null ? (moyenne >= 10 ? "admis" : "ajourne") : null);
-  const nbMatieres = b?.nbMatieres ?? matiereRows.length;
 
+  const mention =
+    b?.mention ??
+    (moyenne !== null ? computeMention(moyenne) : null);
+
+  const statut =
+    b?.statut ??
+    (moyenne !== null
+      ? moyenne >= 10
+        ? "admis"
+        : "ajourne"
+      : null);
+
+  const nbMatieres = b?.nbMatieres ?? matiereRows.length;
   const hasNotes = (notes.data?.length ?? 0) > 0;
 
   return (
@@ -161,27 +189,47 @@ export function StudentDashboard() {
         <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
           <CardContent className="px-6 py-6 sm:px-8 sm:py-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
                   <Sparkles className="h-3.5 w-3.5" />
                   Espace étudiant
                 </div>
+
                 <h2 className="text-2xl font-semibold tracking-tight">
                   Bienvenue, {prenom} {nom}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Classe{" "}
-                  <span className="font-medium text-foreground">{classe}</span>
-                  {" · "}
-                  Matricule{" "}
-                  <span className="font-mono text-xs font-medium text-foreground">
-                    {matricule}
+
+                {/* Section, class and student number */}
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="rounded-md border bg-background/70 px-3 py-1.5">
+                    <span className="text-muted-foreground">Section : </span>
+                    <span className="font-medium text-foreground">
+                      {section}
+                    </span>
                   </span>
-                </p>
+
+                  <span className="rounded-md border bg-background/70 px-3 py-1.5">
+                    <span className="text-muted-foreground">Classe : </span>
+                    <span className="font-medium text-foreground">
+                      {classe}
+                    </span>
+                  </span>
+
+                  <span className="rounded-md border bg-background/70 px-3 py-1.5">
+                    <span className="text-muted-foreground">Matricule : </span>
+                    <span className="font-mono text-xs font-medium text-foreground">
+                      {matricule}
+                    </span>
+                  </span>
+                </div>
               </div>
+
               {b && (
-                <div className="flex flex-col items-start sm:items-end gap-2">
-                  <div className="text-xs text-muted-foreground">Moyenne générale</div>
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <div className="text-xs text-muted-foreground">
+                    Moyenne générale
+                  </div>
+
                   <div className="text-3xl font-semibold tabular-nums">
                     {b.moyenne.toFixed(2)}
                     <span className="text-base font-normal text-muted-foreground">
@@ -189,6 +237,7 @@ export function StudentDashboard() {
                       / 20
                     </span>
                   </div>
+
                   <div className="flex items-center gap-2">
                     {mention && <MentionBadge mention={mention} />}
                     {statut && <StatutBadge statut={statut} />}
@@ -211,10 +260,11 @@ export function StudentDashboard() {
             moyenne === null
               ? "default"
               : moyenne >= 10
-              ? "success"
-              : "danger"
+                ? "success"
+                : "danger"
           }
         />
+
         <StatCard
           label="Mention"
           value={mention ? mentionLabel(mention) : "—"}
@@ -222,13 +272,27 @@ export function StudentDashboard() {
           icon={Award}
           accent="info"
         />
+
         <StatCard
           label="Statut"
-          value={statut === "admis" ? "Admis" : statut === "ajourne" ? "Ajourné" : "—"}
+          value={
+            statut === "admis"
+              ? "Admis"
+              : statut === "ajourne"
+                ? "Ajourné"
+                : "—"
+          }
           hint={statut ? "Année en cours" : undefined}
           icon={statut === "admis" ? CheckCircle2 : XCircle}
-          accent={statut === "admis" ? "success" : statut === "ajourne" ? "danger" : "default"}
+          accent={
+            statut === "admis"
+              ? "success"
+              : statut === "ajourne"
+                ? "danger"
+                : "default"
+          }
         />
+
         <StatCard
           label="Nombre de matières"
           value={nbMatieres}
@@ -245,10 +309,12 @@ export function StudentDashboard() {
             <GraduationCap className="h-4 w-4 text-primary" />
             Moyenne par matière
           </CardTitle>
+
           <p className="text-sm text-muted-foreground">
             Vue d'ensemble de vos résultats par matière.
           </p>
         </CardHeader>
+
         <CardContent>
           {!hasNotes ? (
             <EmptyState
@@ -257,7 +323,10 @@ export function StudentDashboard() {
             />
           ) : (
             <div className="space-y-4">
-              <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 36)}>
+              <ResponsiveContainer
+                width="100%"
+                height={Math.max(220, chartData.length * 36)}
+              >
                 <BarChart
                   data={chartData}
                   layout="vertical"
@@ -268,12 +337,14 @@ export function StudentDashboard() {
                     horizontal={false}
                     stroke="var(--border)"
                   />
+
                   <XAxis
                     type="number"
                     domain={[0, 20]}
                     tick={{ fontSize: 11 }}
                     stroke="var(--muted-foreground)"
                   />
+
                   <YAxis
                     type="category"
                     dataKey="name"
@@ -281,6 +352,7 @@ export function StudentDashboard() {
                     tick={{ fontSize: 11 }}
                     stroke="var(--muted-foreground)"
                   />
+
                   <Tooltip
                     cursor={{ fill: "var(--muted)" }}
                     contentStyle={{
@@ -288,8 +360,12 @@ export function StudentDashboard() {
                       border: "1px solid var(--border)",
                       fontSize: 12,
                     }}
-                    formatter={(v: number) => [`${v.toFixed(2)} / 20`, "Moyenne"]}
+                    formatter={(v: number) => [
+                      `${v.toFixed(2)} / 20`,
+                      "Moyenne",
+                    ]}
                   />
+
                   <Bar dataKey="moyenne" radius={[0, 4, 4, 0]}>
                     {chartData.map((d, i) => (
                       <Cell key={i} fill={d.fill} />
@@ -297,13 +373,30 @@ export function StudentDashboard() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+
               <Separator />
+
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                <LegendDot color={barColorForMoyenne(17)} label="Très bien (≥16)" />
-                <LegendDot color={barColorForMoyenne(15)} label="Bien (14-16)" />
-                <LegendDot color={barColorForMoyenne(13)} label="Assez bien (12-14)" />
-                <LegendDot color={barColorForMoyenne(11)} label="Passable (10-12)" />
-                <LegendDot color={barColorForMoyenne(8)} label="Ajourné (<10)" />
+                <LegendDot
+                  color={barColorForMoyenne(17)}
+                  label="Très bien (≥16)"
+                />
+                <LegendDot
+                  color={barColorForMoyenne(15)}
+                  label="Bien (14-16)"
+                />
+                <LegendDot
+                  color={barColorForMoyenne(13)}
+                  label="Assez bien (12-14)"
+                />
+                <LegendDot
+                  color={barColorForMoyenne(11)}
+                  label="Passable (10-12)"
+                />
+                <LegendDot
+                  color={barColorForMoyenne(8)}
+                  label="Ajourné (<10)"
+                />
               </div>
             </div>
           )}
@@ -328,10 +421,19 @@ function mentionLabel(m: Mention): string {
   }
 }
 
-function LegendDot({ color, label }: { color: string; label: string }) {
+function LegendDot({
+  color,
+  label,
+}: {
+  color: string;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
+      <span
+        className="h-2.5 w-2.5 rounded-sm"
+        style={{ background: color }}
+      />
       <span>{label}</span>
     </div>
   );

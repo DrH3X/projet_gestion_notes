@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -8,13 +9,13 @@ import {
   MapPin,
   CalendarDays,
   ShieldCheck,
+  BookOpen,
 } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/store/auth-store";
 import { useAsync } from "@/hooks/use-async";
 import { SectionHeader } from "@/components/shared/section-header";
-import { TableSkeleton } from "@/components/shared/loading";
-import { CardGridSkeleton } from "@/components/shared/loading";
+import { TableSkeleton, CardGridSkeleton } from "@/components/shared/loading";
 import { ErrorState } from "@/components/shared/error-state";
 import { RoleBadge } from "@/components/shared/badges";
 import {
@@ -38,7 +39,7 @@ export function StudentProfile() {
           description="Vos informations personnelles et académiques."
         />
         <CardGridSkeleton count={2} />
-        <TableSkeleton rows={4} cols={2} />
+        <TableSkeleton rows={5} cols={2} />
       </div>
     );
   }
@@ -56,10 +57,19 @@ export function StudentProfile() {
   }
 
   const d = me.data;
+
   const prenom = d?.prenom ?? user?.prenom ?? "—";
   const nom = d?.nom ?? user?.nom ?? "—";
   const email = d?.email ?? user?.email ?? "—";
-  const initials = `${prenom.charAt(0) ?? ""}${nom.charAt(0) ?? ""}`.toUpperCase();
+
+  // Prefer the academic assignment returned by the backend.
+  const section = d?.sectionNom || "Non affectée";
+  const classe = d?.classeNom || d?.classe || user?.classe || "Non affectée";
+
+  const initials =
+    `${prenom !== "—" ? prenom.charAt(0) : ""}${
+      nom !== "—" ? nom.charAt(0) : ""
+    }`.toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -68,29 +78,36 @@ export function StudentProfile() {
         description="Vos informations personnelles et académiques."
       />
 
-      {/* Identity card */}
+      {/* Student identity and academic assignment */}
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
           <CardContent className="px-6 py-6 sm:px-8 sm:py-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-semibold shadow-sm">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground shadow-sm">
                 {initials || "?"}
               </div>
+
               <div className="min-w-0 flex-1">
                 <h2 className="text-xl font-semibold tracking-tight">
                   {prenom} {nom}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-0.5 break-all">
+
+                <p className="mt-0.5 break-all text-sm text-muted-foreground">
                   {email}
                 </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   {user?.role && <RoleBadge role={user.role} />}
-                  {d?.classe && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">
-                      <GraduationCap className="h-3 w-3" />
-                      {d.classe}
-                    </span>
-                  )}
+
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Section : {section}
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    Classe : {classe}
+                  </span>
                 </div>
               </div>
             </div>
@@ -98,52 +115,65 @@ export function StudentProfile() {
         </div>
       </Card>
 
-      {/* Two columns: academic + account */}
+      {/* Personal and academic information */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Personal & academic information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-4 w-4 text-primary" />
               Informations personnelles & académiques
             </CardTitle>
+
             <CardDescription>
-              Données issues de votre dossier (consulterMonDossier).
+              Informations de votre dossier étudiant.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-1">
             <DetailRow
               icon={User}
               label="Nom"
-              value={nom !== "—" ? nom : "—"}
+              value={nom}
             />
+
             <DetailRow
               icon={User}
               label="Prénom"
-              value={prenom !== "—" ? prenom : "—"}
+              value={prenom}
             />
+
             <DetailRow
               icon={Mail}
               label="Email"
               value={email}
               mono
             />
+
             <DetailRow
               icon={IdCard}
               label="Matricule"
-              value={d?.matricule ?? "—"}
+              value={d?.matricule || "—"}
               mono
             />
+
+            <DetailRow
+              icon={BookOpen}
+              label="Section"
+              value={section}
+            />
+
             <DetailRow
               icon={GraduationCap}
               label="Classe"
-              value={d?.classe ?? user?.classe ?? "—"}
+              value={classe}
             />
+
             <DetailRow
               icon={CalendarDays}
               label="Date de naissance"
               value={d?.dateNaissance || "—"}
             />
+
             <DetailRow
               icon={MapPin}
               label="Adresse"
@@ -159,10 +189,12 @@ export function StudentProfile() {
               <ShieldCheck className="h-4 w-4 text-primary" />
               Compte & accès
             </CardTitle>
+
             <CardDescription>
-              Identifiants techniques de votre compte utilisateur.
+              Informations relatives à votre compte utilisateur.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-1">
             <DetailRow
               icon={IdCard}
@@ -170,17 +202,22 @@ export function StudentProfile() {
               value={truncateId(user?.id ?? d?.userId ?? "—")}
               mono
             />
+
             <DetailRow
               icon={IdCard}
               label="Identifiant dossier"
               value={truncateId(d?.id ?? "—")}
               mono
             />
+
             <DetailRow
               icon={ShieldCheck}
               label="Rôle"
-              valueNode={user?.role ? <RoleBadge role={user.role} /> : <Dash />}
+              valueNode={
+                user?.role ? <RoleBadge role={user.role} /> : <Dash />
+              }
             />
+
             <DetailRow
               icon={Mail}
               label="Email de connexion"
@@ -208,11 +245,12 @@ function DetailRow({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-border last:border-0">
+    <div className="flex items-center justify-between gap-4 border-b border-border py-2.5 last:border-0">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         <span>{label}</span>
       </div>
+
       <div className="min-w-0 text-right">
         {valueNode ? (
           valueNode
@@ -220,11 +258,11 @@ function DetailRow({
           <span
             className={
               mono
-                ? "font-mono text-xs font-medium break-all"
-                : "font-medium text-sm break-words"
+                ? "break-all font-mono text-xs font-medium"
+                : "break-words text-sm font-medium"
             }
           >
-            {value ?? "—"}
+            {value || "—"}
           </span>
         )}
       </div>

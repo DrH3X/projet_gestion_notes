@@ -383,7 +383,6 @@ function CreateAccountDialog({
         <DialogHeader>
           <DialogTitle>Nouveau compte</DialogTitle>
           <DialogDescription>
-            Crée un compte utilisateur (opération SOAP creerCompte). Le rôle ne sera plus modifiable ensuite.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit((vals) => {

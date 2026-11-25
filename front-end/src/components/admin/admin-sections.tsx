@@ -282,13 +282,14 @@ export function AdminSections() {
           ) : (
             <div className="space-y-2">
               {teachers.map((teacher) => (
-                <label key={teacher.id} className="flex items-center gap-3 rounded-md border p-3 cursor-pointer hover:bg-muted/50">
-                  <input type="checkbox" className="size-4 accent-primary" checked={selectedTeacherIds.includes(teacher.id)}
+                <label key={teacher.id} className={`flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors ${selectedTeacherIds.includes(teacher.id) ? "border-green-500 bg-green-50/70 dark:bg-green-950/20" : "hover:bg-muted/50"}`}>
+                  <input type="checkbox" className="size-4 accent-green-600" checked={selectedTeacherIds.includes(teacher.id)}
                     onChange={(event) => setSelectedTeacherIds((current) => event.target.checked ? [...current, teacher.id] : current.filter((id) => id !== teacher.id))} />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{teacher.prenom} {teacher.nom}</p>
+                    <p className={`text-sm font-medium ${selectedTeacherIds.includes(teacher.id) ? "text-green-700 dark:text-green-400" : ""}`}>{teacher.prenom} {teacher.nom}</p>
                     <p className="text-xs text-muted-foreground">{teacher.email}</p>
                   </div>
+                  {selectedTeacherIds.includes(teacher.id) && <Badge className="ml-auto bg-green-600 text-white hover:bg-green-600">Affecté</Badge>}
                 </label>
               ))}
             </div>

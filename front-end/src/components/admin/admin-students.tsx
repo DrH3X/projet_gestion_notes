@@ -389,10 +389,10 @@ function StudentFormDialog({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date de naissance">
+            <Field label="Date de naissance (optionnelle)">
               <Input type="date" {...register("dateNaissance")} />
             </Field>
-            <Field label="Adresse">
+            <Field label="Adresse (optionnelle)">
               <Input {...register("adresse")} />
             </Field>
           </div>

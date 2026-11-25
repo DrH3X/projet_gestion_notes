@@ -59,6 +59,8 @@ const createSchema = z
     motDePasse: z.string().min(6, "Min. 6 caractères"),
     role: z.enum(["administrateur", "enseignant", "etudiant"]),
     classe: z.string().optional(),
+    dateNaissance: z.string().optional(),
+    adresse: z.string().optional(),
   })
 ;  // Section/classe are handled via separate dropdowns, not the form schema
 
@@ -99,6 +101,10 @@ export function AdminAccounts() {
         motDePasse: values.motDePasse,
         role: values.role,
       };
+      if (values.role === "etudiant") {
+        if (values.dateNaissance) body.dateNaissance = values.dateNaissance;
+        if (values.adresse?.trim()) body.adresse = values.adresse.trim();
+      }
       if (values.role === "etudiant" || values.role === "enseignant") {
         if (values.classe) body.classe = values.classe;
         if ((values as any).sectionId) body.sectionId = (values as any).sectionId;
@@ -349,6 +355,8 @@ function CreateAccountDialog({
       motDePasse: "",
       role: "etudiant",
       classe: "",
+      dateNaissance: "",
+      adresse: "",
     },
   });
 
@@ -424,6 +432,16 @@ return onSubmit(enhanced as CreateValues);
               </SelectContent>
             </Select>
           </Field>
+          {role === "etudiant" && (
+            <>
+              <Field label="Date de naissance (optionnelle)">
+                <Input type="date" {...register("dateNaissance")} />
+              </Field>
+              <Field label="Adresse (optionnelle)">
+                <Input {...register("adresse")} placeholder="Adresse de l'étudiant" />
+              </Field>
+            </>
+          )}
           {(role === "etudiant" || role === "enseignant") && (
             <>
               <Field label="Section" error={!selectedSectionId ? "Section requise" : undefined}>

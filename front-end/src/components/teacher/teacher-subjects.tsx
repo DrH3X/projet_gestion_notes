@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Pencil, Eye, Loader2, BookOpen, Scale } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { useAsync } from "@/hooks/use-async";
+import { useSectionsClasses } from "@/hooks/use-sections-classes";
 import { toast } from "sonner";
 import { SectionHeader } from "@/components/shared/section-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -32,6 +33,13 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Matiere, SoapFault } from "@/types";
 
 const schema = z.object({
@@ -49,18 +57,29 @@ export function TeacherSubjects() {
   const [editTarget, setEditTarget] = useState<Matiere | null>(null);
   const [viewTarget, setViewTarget] = useState<Matiere | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [filterSection, setFilterSection] = useState("all");
+  const [filterClasse, setFilterClasse] = useState("all");
+  const { sections, classes, loading: sectionsClassesLoading } = useSectionsClasses();
 
   const list = useAsync<Matiere[]>(() => api.subjects.myList(), []);
+  const filteredClasses = filterSection === "all"
+    ? classes
+    : classes.filter((classe) => classe.sectionId === filterSection);
+  const filteredSubjects = (list.data ?? []).filter((subject) => {
+    if (filterSection !== "all" && subject.sectionId !== filterSection) return false;
+    if (filterClasse !== "all" && subject.classeId !== filterClasse) return false;
+    return true;
+  });
 
   async function reload() {
     await list.refetch();
   }
 
   const stats = useMemo(() => {
-    const subs = list.data ?? [];
+    const subs = filteredSubjects;
     const totalCoef = subs.reduce((s, m) => s + (m.coefficient || 0), 0);
     return { total: subs.length, totalCoef };
-  }, [list.data]);
+  }, [filteredSubjects]);
 
   async function onEdit(values: FormValues) {
     if (!editTarget) return;
@@ -83,6 +102,18 @@ export function TeacherSubjects() {
   }
 
   const columns: Column<Matiere>[] = [
+    {
+      key: "section",
+      header: "Section",
+      sortValue: (r) => r.sectionNom || "",
+      cell: (r) => <span>{r.sectionNom || "Non renseignée"}</span>,
+    },
+    {
+      key: "classe",
+      header: "Classe",
+      sortValue: (r) => r.classeNom || "",
+      cell: (r) => <span>{r.classeNom || "Non renseignée"}</span>,
+    },
     {
       key: "intitule",
       header: "Intitulé",
@@ -123,6 +154,44 @@ export function TeacherSubjects() {
         description="Les matières dont vous êtes responsable."
       />
 
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Section</Label>
+          <Select
+            value={filterSection}
+            onValueChange={(value) => {
+              setFilterSection(value);
+              setFilterClasse("all");
+            }}
+            disabled={sectionsClassesLoading}
+          >
+            <SelectTrigger><SelectValue placeholder="Toutes les sections" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les sections</SelectItem>
+              {sections.map((section) => (
+                <SelectItem key={section.id} value={section.id}>{section.nom}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Classe</Label>
+          <Select
+            value={filterClasse}
+            onValueChange={setFilterClasse}
+            disabled={sectionsClassesLoading || filteredClasses.length === 0}
+          >
+            <SelectTrigger><SelectValue placeholder="Toutes les classes" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les classes</SelectItem>
+              {filteredClasses.map((classe) => (
+                <SelectItem key={classe.id} value={classe.id}>{classe.nom}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <StatCard label="Mes matières" value={stats.total} icon={BookOpen} accent="default" />
         <StatCard label="Somme des coefficients" value={stats.totalCoef} icon={Scale} accent="info" />
@@ -134,10 +203,10 @@ export function TeacherSubjects() {
         <ErrorState error={list.error} onRetry={reload} />
       ) : (
         <DataTable
-          data={list.data ?? []}
+          data={filteredSubjects}
           columns={columns}
           rowKey={(r) => r.id}
-          searchKeys={[(r) => r.intitule]}
+          searchKeys={[(r) => `${r.intitule} ${r.sectionNom ?? ""} ${r.classeNom ?? ""}`]}
           searchPlaceholder="Rechercher une matière…"
           emptyTitle="Aucune matière"
           emptyDescription="Aucune matière ne vous est actuellement assignée. Contactez l'administrateur."

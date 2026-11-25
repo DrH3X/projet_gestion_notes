@@ -9,6 +9,8 @@ const {
   Etudiant,
   Section,
   Classe,
+  EnseignantSection,
+  EnseignantClasse,
 } = require('../models');
 const { hashPassword } = require('../utils/hachage');
 const { buildFault, FaultCodes } = require('../utils/erreurs');
@@ -139,6 +141,40 @@ async function creerCompte(args) {
     }
   }
 
+  // 5b. Valider les affectations initiales d'un enseignant.
+  // Elles doivent être persistées dans les tables de liaison, pas seulement
+  // dans User.classe (qui ne suffit pas à représenter section/classe).
+  let teacherSection = null;
+  let teacherClasse = null;
+  if (role === 'enseignant' && (finalSectionId || finalClasseId)) {
+    if (!finalSectionId || !finalClasseId) {
+      throw buildFault(
+        FaultCodes.CHAMP_MANQUANT,
+        "La section et la classe sont nécessaires pour affecter un enseignant",
+        [
+          ...(!finalSectionId ? ['sectionId'] : []),
+          ...(!finalClasseId ? ['classeId'] : []),
+        ]
+      );
+    }
+
+    teacherSection = await Section.findByPk(finalSectionId);
+    teacherClasse = await Classe.findByPk(finalClasseId);
+
+    if (!teacherSection) {
+      throw buildFault(FaultCodes.INTROUVABLE, 'Section introuvable');
+    }
+    if (!teacherClasse) {
+      throw buildFault(FaultCodes.INTROUVABLE, 'Classe introuvable');
+    }
+    if (String(teacherClasse.sectionId) !== String(teacherSection.id)) {
+      throw buildFault(
+        FaultCodes.VALEUR_INVALIDE,
+        'La classe sélectionnée ne correspond pas à la section choisie'
+      );
+    }
+  }
+
   // 6. Générer le matricule de l'étudiant
   const matricule =
     role === 'etudiant'
@@ -162,7 +198,7 @@ async function creerCompte(args) {
       { transaction }
     );
 
-    // 8. Enregistrer les identifiants académiques
+    // 8. Enregistrer les identifiants académiques de l'étudiant.
     if (role === 'etudiant') {
       await Etudiant.create(
         {
@@ -170,11 +206,21 @@ async function creerCompte(args) {
           matricule,
           dateNaissance: dateNaissance || null,
           adresse: adresse || null,
-
-          // Les deux champs essentiels
           sectionId: selectedSection.id,
           classeId: selectedClasse.id,
         },
+        { transaction }
+      );
+    }
+
+    // 9. Persister aussi les affectations initiales de l'enseignant.
+    if (role === 'enseignant' && teacherSection && teacherClasse) {
+      await EnseignantSection.create(
+        { userId: user.id, sectionId: teacherSection.id },
+        { transaction }
+      );
+      await EnseignantClasse.create(
+        { userId: user.id, classeId: teacherClasse.id },
         { transaction }
       );
     }

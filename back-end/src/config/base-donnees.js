@@ -24,10 +24,9 @@ if (DIALECT === 'postgres') {
       dialect: 'postgres',
       logging: false,
       dialectOptions: isSsl
-        ? { ssl: { require: true, rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' } }
+        ? { ssl: { require: true, rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' } }
         : {},
     }
-    
   );
 } else {
   // SQLite — file-based, persists across restarts.

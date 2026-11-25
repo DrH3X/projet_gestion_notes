@@ -1,4 +1,4 @@
-// src/services/serviceComptes.js
+// src/services/accountsService.js
 // SOAP service object for the Accounts service (Sprint 2).
 // RBAC: all operations require role "administrateur" via extractUser(req).
 

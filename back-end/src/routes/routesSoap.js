@@ -1,4 +1,4 @@
-// src/routes/routesSoap.js
+// src/routes/soapRoutes.js
 // Wires SOAP services to the Express app.
 // Each service is mounted on its own path:
 //   /wsdl            -> Auth service (login/logout, public)
@@ -14,6 +14,7 @@ const accountsService = require('../services/serviceComptes');
 const studentsService = require('../services/serviceEtudiants');
 const subjectsService = require('../services/serviceMatieres');
 const notesService = require('../services/serviceNotes');
+const sectionsService = require('../services/serviceSections');
 
 const WSDL_DIR = path.join(__dirname, '..', '..', 'wsdl');
 
@@ -27,6 +28,7 @@ const SERVICES = [
   { path: '/wsdl/students', file: 'students.wsdl', service: studentsService, label: 'students' },
   { path: '/wsdl/subjects', file: 'subjects.wsdl', service: subjectsService, label: 'subjects' },
   { path: '/wsdl/notes', file: 'notes.wsdl', service: notesService, label: 'notes' },
+  { path: '/wsdl/sections', file: 'sections.wsdl', service: sectionsService, label: 'sections' },
 ];
 
 /**

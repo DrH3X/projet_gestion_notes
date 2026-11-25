@@ -1,4 +1,4 @@
-// src/services/serviceNotes.js
+// src/services/notesService.js
 // SOAP service object for the Notes service (Sprint 4).
 // RBAC:
 //   saisirNote, modifierNote, supprimerNote    → enseignant (responsable de la matière) ou admin

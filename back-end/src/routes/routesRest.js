@@ -1,4 +1,4 @@
-// src/routes/routesRest.js
+// src/routes/restRoutes.js
 // Convenience REST endpoints (mirror of the SOAP operations).
 //
 // Auth:       /api/auth/*
@@ -6,6 +6,7 @@
 // Students:   /api/students/*    (admin only — except consulter)
 // Subjects:   /api/subjects/*    (admin for write, authenticated for read)
 // Notes:      /api/notes/*       (Sprint 4)
+// Sections:   /api/sections/*    (admin CRUD + assignments)
 
 const express = require('express');
 const router = express.Router();
@@ -15,6 +16,7 @@ const accountsController = require('../controllers/controleurComptes');
 const studentsController = require('../controllers/controleurEtudiants');
 const subjectsController = require('../controllers/controleurMatieres');
 const notesController = require('../controllers/controleurNotes');
+const sectionsController = require('../controllers/controleurSections');
 const { authenticate, requireRole } = require('../middleware/middlewareAuth');
 
 // ============================================================
@@ -315,6 +317,65 @@ router.delete('/notes/:id', authenticate, requireRole('enseignant', 'administrat
   } catch (err) {
     res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message });
   }
+});
+
+// ============================================================
+// /api/sections/*  — Sections & Classes CRUD + assignments
+//   All write ops → admin only; read ops → authenticated
+// ============================================================
+
+// --- Sections ---
+router.get('/sections', authenticate, async (req, res) => {
+  try { res.json(await sectionsController.listerSections()); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.post('/sections', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.status(201).json(await sectionsController.creerSection(req.body)); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.put('/sections/:id', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.modifierSection({ id: req.params.id, ...req.body })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.delete('/sections/:id', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.supprimerSection({ id: req.params.id })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+
+// --- Classes ---
+router.get('/classes', authenticate, async (req, res) => {
+  try { res.json(await sectionsController.listerClasses({ sectionId: req.query.sectionId })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.post('/classes', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.status(201).json(await sectionsController.creerClasse(req.body)); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.put('/classes/:id', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.modifierClasse({ id: req.params.id, ...req.body })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.delete('/classes/:id', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.supprimerClasse({ id: req.params.id })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+
+// --- Assignments ---
+router.post('/sections/assign-teacher-sections', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.assignerEnseignantSections(req.body)); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.post('/sections/assign-teacher-classes', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.assignerEnseignantClasses(req.body)); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.get('/sections/teacher-assignments/:userId', authenticate, async (req, res) => {
+  try { res.json(await sectionsController.consulterAffectationsEnseignant({ userId: req.params.userId })); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
+});
+router.post('/sections/assign-student', authenticate, requireRole('administrateur'), async (req, res) => {
+  try { res.json(await sectionsController.assignerEtudiantSection(req.body)); }
+  catch (err) { res.status(400).json({ code: err.Fault?.Detail?.code || 'ERREUR', message: err.message }); }
 });
 
 module.exports = router;

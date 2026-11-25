@@ -1,16 +1,8 @@
-// serveur.js
-// SOAP backend (Sprints 1, 2, 3, 4) — production-ready.
+// server.js
+// SOAP backend mini-service (Sprints 1, 2, 3, 4).
+// Port: 3001 (the Next.js frontend runs on 3000 and calls this via SOAP).
 //
-// Configuration via environment variables (see .env.example):
-//   PORT            – HTTP port (default 3001)
-//   CORS_ORIGIN     – allowed frontend origin (default * for dev)
-//   DB_DIALECT      – 'sqlite' (default) or 'postgres'
-//   DB_FILE         – SQLite file path (sqlite only)
-//   DB_HOST/PORT/USER/PASSWORD/NAME – PostgreSQL connection
-//   JWT_SECRET      – JWT signing secret
-//   JWT_EXPIRES_IN  – token lifetime (default 8h)
-//
-// Storage: SQLite by default, switchable to PostgreSQL via DB_DIALECT=postgres.
+// Storage: SQLite by default (sandbox), switchable to PostgreSQL via DB_DIALECT.
 
 require('dotenv').config();
 
@@ -18,13 +10,12 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const { sequelize, User, Etudiant, Matiere, Note } = require('./src/models');
+const { sequelize, User, Etudiant, Matiere, Note, Section, Classe, EnseignantSection, EnseignantClasse } = require('./src/models');
 const { attachSoapService } = require('./src/routes/routesSoap');
 const restRoutes = require('./src/routes/routesRest');
 const { hashPassword } = require('./src/utils/hachage');
 
-const PORT = process.env.PORT || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const PORT = 3001;
 
 // Ensure the SQLite data directory exists (file-based storage).
 const dataDir = path.join(__dirname, 'data');
@@ -33,7 +24,7 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 const app = express();
 
 // Middleware
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -42,17 +33,17 @@ app.use('/api', restRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  const base = `http://localhost:${PORT}`;
   res.json({
     service: 'Scolarité SOAP',
-    sprints: ['1 — Authentification', '2 — Gestion des comptes', '3 — Étudiants & Matières', '4 — Notes & Moyennes'],
+    sprints: ['1 — Authentification', '2 — Gestion des comptes', '3 — Étudiants & Matières', '4 — Notes & Moyennes', '5 — Sections & Classes'],
     status: 'running',
     wsdl: {
-      auth: `${base}/wsdl?wsdl`,
-      accounts: `${base}/wsdl/accounts?wsdl`,
-      students: `${base}/wsdl/students?wsdl`,
-      subjects: `${base}/wsdl/subjects?wsdl`,
-      notes: `${base}/wsdl/notes?wsdl`,
+      auth: 'http://localhost:3001/wsdl?wsdl',
+      accounts: 'http://localhost:3001/wsdl/accounts?wsdl',
+      students: 'http://localhost:3001/wsdl/students?wsdl',
+      subjects: 'http://localhost:3001/wsdl/subjects?wsdl',
+      notes: 'http://localhost:3001/wsdl/notes?wsdl',
+      sections: 'http://localhost:3001/wsdl/sections?wsdl',
     },
   });
 });
@@ -70,8 +61,8 @@ const demoDossiers = [
   { email: 'etudiant@scolarite.com', matricule: 'ETU-001', dateNaissance: '2002-05-14', adresse: 'Tunis' },
 ];
 const demoMatieres = [
-  { intitule: 'Algorithmique', coefficient: 3, enseignantEmail: 'enseignant@scolarite.com' },
-  { intitule: 'Bases de données', coefficient: 4, enseignantEmail: 'enseignant@scolarite.com' },
+  { intitule: 'Algorithmique', coefficient: 3, enseignantEmail: 'enseignant@scolarite.com', sectionNom: 'Informatique', classeNom: '3A Info' },
+  { intitule: 'Bases de données', coefficient: 4, enseignantEmail: 'enseignant@scolarite.com', sectionNom: 'Informatique', classeNom: '3A Info' },
 ];
 
 // Demo notes — Sprint 4 (seeded for the demo student on the 2 demo matières).
@@ -86,6 +77,17 @@ const demoNotes = [
   { matiereIntitule: 'Bases de données', etudiantEmail: 'etudiant@scolarite.com', type: 'DS', valeur: 11 },
   { matiereIntitule: 'Bases de données', etudiantEmail: 'etudiant@scolarite.com', type: 'examen', valeur: 15 },
   { matiereIntitule: 'Bases de données', etudiantEmail: 'etudiant@scolarite.com', type: 'TP', valeur: 13 },
+];
+
+// Demo sections + classes
+const demoSections = [
+  { nom: 'Informatique', description: 'Filière informatique' },
+  { nom: 'Réseaux', description: 'Filière réseaux et télécommunications' },
+];
+const demoClasses = [
+  { nom: '3A Info', sectionNom: 'Informatique' },
+  { nom: '1A Info', sectionNom: 'Informatique' },
+  { nom: '2A Réseaux', sectionNom: 'Réseaux' },
 ];
 
 async function seedDemoData() {
@@ -112,16 +114,62 @@ async function seedDemoData() {
     });
     console.log(`[Seed] dossier: ${d.email} (matricule ${d.matricule})`);
   }
-  // 3. Matières
-  for (const m of demoMatieres) {
-    const teacher = await User.findOne({ where: { email: m.enseignantEmail } });
-    if (!teacher) continue;
-    const exists = await Matiere.findOne({ where: { intitule: m.intitule } });
+  // 3. Matières (need sections/classes to exist first — moved after step 5)
+  // Matières are created after sections/classes are seeded (see below)
+  // 4. Notes — created after matières (see step 8/9 below)
+  // 5. Sections + Classes
+  for (const s of demoSections) {
+    const exists = await Section.findOne({ where: { nom: s.nom } });
     if (exists) continue;
-    await Matiere.create({ intitule: m.intitule, coefficient: m.coefficient, enseignantId: teacher.id });
-    console.log(`[Seed] matiere: ${m.intitule} (coef ${m.coefficient})`);
+    await Section.create(s);
+    console.log(`[Seed] section: ${s.nom}`);
   }
-  // 4. Notes (Sprint 4)
+  const sectionMap = {};
+  for (const c of demoClasses) {
+    const section = await Section.findOne({ where: { nom: c.sectionNom } });
+    if (!section) continue;
+    sectionMap[c.nom] = section;
+    const exists = await Classe.findOne({ where: { nom: c.nom, sectionId: section.id } });
+    if (exists) continue;
+    const classe = await Classe.create({ nom: c.nom, sectionId: section.id });
+    console.log(`[Seed] classe: ${c.nom} (${c.sectionNom})`);
+  }
+  // 6. Assign the demo student to a section + classe
+  const classe3A = await Classe.findOne({ where: { nom: '3A Info' } });
+  const sectionInfo = await Section.findOne({ where: { nom: 'Informatique' } });
+  if (classe3A && sectionInfo) {
+    const etu = await Etudiant.findOne({ where: { matricule: 'ETU-001' } });
+    if (etu && !etu.classeId) {
+      etu.sectionId = sectionInfo.id;
+      etu.classeId = classe3A.id;
+      await etu.save();
+      console.log(`[Seed] etudiant ETU-001 assigned to Informatique / 3A Info`);
+    }
+  }
+  // 7. Assign the demo teacher to the Informatique section + 3A Info classe
+  const teacher = await User.findOne({ where: { email: 'enseignant@scolarite.com' } });
+  if (teacher && sectionInfo && classe3A) {
+    const ea1 = await EnseignantSection.findOne({ where: { userId: teacher.id, sectionId: sectionInfo.id } });
+    if (!ea1) { await EnseignantSection.create({ userId: teacher.id, sectionId: sectionInfo.id }); console.log(`[Seed] enseignant assigned to section Informatique`); }
+    const ea2 = await EnseignantClasse.findOne({ where: { userId: teacher.id, classeId: classe3A.id } });
+    if (!ea2) { await EnseignantClasse.create({ userId: teacher.id, classeId: classe3A.id }); console.log(`[Seed] enseignant assigned to classe 3A Info`); }
+  }
+  // 8. Create matières (now that sections/classes exist)
+  for (const m of demoMatieres) {
+    const matTeacher = await User.findOne({ where: { email: m.enseignantEmail } });
+    if (!matTeacher) continue;
+    const section = await Section.findOne({ where: { nom: m.sectionNom } });
+    const classe = await Classe.findOne({ where: { nom: m.classeNom, sectionId: section ? section.id : null } });
+    if (!section || !classe) continue;
+    const exists = await Matiere.findOne({ where: { intitule: m.intitule, classeId: classe.id } });
+    if (exists) continue;
+    await Matiere.create({
+      intitule: m.intitule, coefficient: m.coefficient,
+      enseignantId: matTeacher.id, sectionId: section.id, classeId: classe.id,
+    });
+    console.log(`[Seed] matiere: ${m.intitule} (coef ${m.coefficient}, ${m.sectionNom}/${m.classeNom})`);
+  }
+  // 9. Create notes (now that matières exist with the new schema)
   for (const n of demoNotes) {
     const matiere = await Matiere.findOne({ where: { intitule: n.matiereIntitule } });
     if (!matiere) continue;
@@ -140,26 +188,61 @@ async function seedDemoData() {
 (async () => {
   try {
     await sequelize.authenticate();
-    // Non-destructive sync: creates tables if missing, does NOT alter existing
-    // (alter:true is destructive on SQLite — it recreates tables and loses data).
-    await sequelize.sync();
-    console.log('[DB] connected, schema synced (SQLite).');
+
+    // Check if the DB schema is up-to-date. If any new column is missing
+    // (sectionId, classeId on etudiants OR matieres), force-sync to recreate
+    // all tables with the new schema (data will be lost + re-seeded).
+    const { sequelize: seq } = require('./src/models');
+    let needsForceSync = false;
+    const missingColumns = [];
+
+    // Check etudiants table
+    try {
+      const etuCols = await seq.getQueryInterface().describeTable('etudiants');
+      if (!etuCols.sectionId) missingColumns.push('etudiants.sectionId');
+      if (!etuCols.classeId) missingColumns.push('etudiants.classeId');
+    } catch (e) {
+      // Table doesn't exist yet — normal first run
+    }
+
+    // Check matieres table
+    try {
+      const matCols = await seq.getQueryInterface().describeTable('matieres');
+      if (!matCols.sectionId) missingColumns.push('matieres.sectionId');
+      if (!matCols.classeId) missingColumns.push('matieres.classeId');
+    } catch (e) {
+      // Table doesn't exist yet — normal first run
+    }
+
+    if (missingColumns.length > 0) {
+      console.log('[DB] Missing columns detected:', missingColumns.join(', '), '— recreating schema…');
+      needsForceSync = true;
+    }
+
+    if (needsForceSync) {
+      // Drop and recreate all tables with the new schema
+      await sequelize.sync({ force: true });
+      console.log('[DB] schema recreated (force sync).');
+    } else {
+      // Non-destructive sync: creates tables if missing, does NOT alter existing
+      await sequelize.sync();
+      console.log('[DB] connected, schema synced (SQLite).');
+    }
 
     const count = await User.count();
-    if (count === 0) {
-      console.log('[Seed] empty DB — seeding demo data…');
+    if (count === 0 || needsForceSync) {
+      console.log('[Seed] seeding demo data…');
       await seedDemoData();
       console.log('[Seed] done.');
     } else {
-      // Sprint 4: if accounts exist but notes don't (DB from a previous sprint),
-      // seed just the notes so the demo is complete.
-      const noteCount = await Note.count();
-      if (noteCount === 0) {
-        console.log('[Seed] DB has users but no notes — seeding Sprint 4 demo notes…');
+      // If sections don't exist yet (DB from before this feature), seed them.
+      const sectionCount = await Section.count();
+      if (sectionCount === 0) {
+        console.log('[Seed] DB has users but no sections — seeding sections/classes/assignments…');
         await seedDemoData();
         console.log('[Seed] done.');
       } else {
-        console.log(`[Seed] DB already has ${count} users and ${noteCount} notes, skipping seed.`);
+        console.log(`[Seed] DB already has ${count} users, ${sectionCount} sections, skipping seed.`);
       }
     }
 
@@ -170,6 +253,7 @@ async function seedDemoData() {
       console.log(`[SOAP]  students: http://localhost:${PORT}/wsdl/students?wsdl`);
       console.log(`[SOAP]  subjects: http://localhost:${PORT}/wsdl/subjects?wsdl`);
       console.log(`[SOAP]  notes: http://localhost:${PORT}/wsdl/notes?wsdl`);
+      console.log(`[SOAP]  sections: http://localhost:${PORT}/wsdl/sections?wsdl`);
     });
   } catch (err) {
     console.error('[Startup] unable to start:', err.message);

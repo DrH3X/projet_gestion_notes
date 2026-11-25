@@ -1,4 +1,4 @@
-// src/services/serviceAuth.js
+// src/services/authService.js
 // SOAP service object: maps WSDL operations -> controller functions.
 // The `soap` library calls these methods when a SOAP request arrives.
 

@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:tns="http://scolarite.example.com/sections"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 targetNamespace="http://scolarite.example.com/sections"
+                 name="ServiceSections">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://scolarite.example.com/sections" elementFormDefault="qualified">
+
+      <!-- Section -->
+      <xsd:complexType name="Section">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="description" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- Classe -->
+      <xsd:complexType name="Classe">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="sectionId" type="xsd:string"/>
+          <xsd:element name="sectionNom" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- List wrappers (named types for soap lib serialization) -->
+      <xsd:complexType name="ListeSections">
+        <xsd:sequence>
+          <xsd:element name="section" type="tns:Section" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ListeClasses">
+        <xsd:sequence>
+          <xsd:element name="classe" type="tns:Classe" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!-- ===== SECTION CRUD ===== -->
+      <xsd:element name="creerSection">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="creerSectionResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="section" type="tns:Section"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="listerSections"><xsd:complexType><xsd:sequence/></xsd:complexType></xsd:element>
+      <xsd:element name="listerSectionsResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="sections" type="tns:ListeSections"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="modifierSection">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="modifierSectionResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="section" type="tns:Section"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="supprimerSection">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="supprimerSectionResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="succes" type="xsd:boolean"/>
+          <xsd:element name="message" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <!-- ===== CLASSE CRUD ===== -->
+      <xsd:element name="creerClasse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="nom" type="xsd:string"/>
+          <xsd:element name="sectionId" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="creerClasseResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="classe" type="tns:Classe"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="listerClasses">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="sectionId" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="listerClassesResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="classes" type="tns:ListeClasses"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="modifierClasse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="nom" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="sectionId" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="modifierClasseResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="classe" type="tns:Classe"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="supprimerClasse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="supprimerClasseResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="succes" type="xsd:boolean"/>
+          <xsd:element name="message" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <!-- ===== TEACHER ASSIGNMENTS ===== -->
+      <xsd:element name="assignerEnseignantSections">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="userId" type="xsd:string"/>
+          <xsd:element name="sectionIds" type="tns:ListeUuids"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="assignerEnseignantSectionsResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="succes" type="xsd:boolean"/>
+          <xsd:element name="message" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="assignerEnseignantClasses">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="userId" type="xsd:string"/>
+          <xsd:element name="classeIds" type="tns:ListeUuids"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="assignerEnseignantClassesResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="succes" type="xsd:boolean"/>
+          <xsd:element name="message" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="consulterAffectationsEnseignant">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="userId" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="consulterAffectationsEnseignantResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="affectations" type="tns:Affectations"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <!-- ===== STUDENT ASSIGNMENT ===== -->
+      <xsd:element name="assignerEtudiantSection">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="etudiantId" type="xsd:string"/>
+          <xsd:element name="sectionId" type="xsd:string"/>
+          <xsd:element name="classeId" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+      <xsd:element name="assignerEtudiantSectionResponse">
+        <xsd:complexType><xsd:sequence>
+          <xsd:element name="succes" type="xsd:boolean"/>
+          <xsd:element name="message" type="xsd:string"/>
+        </xsd:sequence></xsd:complexType>
+      </xsd:element>
+
+      <!-- Helper types: list of UUID strings + Affectations -->
+      <xsd:complexType name="ListeUuids">
+        <xsd:sequence>
+          <xsd:element name="uuid" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Affectations">
+        <xsd:sequence>
+          <xsd:element name="sections" type="tns:ListeSections"/>
+          <xsd:element name="classes" type="tns:ListeClasses"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- Messages -->
+  <wsdl:message name="creerSectionRequestMessage"><wsdl:part name="parameters" element="tns:creerSection"/></wsdl:message>
+  <wsdl:message name="creerSectionResponseMessage"><wsdl:part name="parameters" element="tns:creerSectionResponse"/></wsdl:message>
+  <wsdl:message name="listerSectionsRequestMessage"><wsdl:part name="parameters" element="tns:listerSections"/></wsdl:message>
+  <wsdl:message name="listerSectionsResponseMessage"><wsdl:part name="parameters" element="tns:listerSectionsResponse"/></wsdl:message>
+  <wsdl:message name="modifierSectionRequestMessage"><wsdl:part name="parameters" element="tns:modifierSection"/></wsdl:message>
+  <wsdl:message name="modifierSectionResponseMessage"><wsdl:part name="parameters" element="tns:modifierSectionResponse"/></wsdl:message>
+  <wsdl:message name="supprimerSectionRequestMessage"><wsdl:part name="parameters" element="tns:supprimerSection"/></wsdl:message>
+  <wsdl:message name="supprimerSectionResponseMessage"><wsdl:part name="parameters" element="tns:supprimerSectionResponse"/></wsdl:message>
+
+  <wsdl:message name="creerClasseRequestMessage"><wsdl:part name="parameters" element="tns:creerClasse"/></wsdl:message>
+  <wsdl:message name="creerClasseResponseMessage"><wsdl:part name="parameters" element="tns:creerClasseResponse"/></wsdl:message>
+  <wsdl:message name="listerClassesRequestMessage"><wsdl:part name="parameters" element="tns:listerClasses"/></wsdl:message>
+  <wsdl:message name="listerClassesResponseMessage"><wsdl:part name="parameters" element="tns:listerClassesResponse"/></wsdl:message>
+  <wsdl:message name="modifierClasseRequestMessage"><wsdl:part name="parameters" element="tns:modifierClasse"/></wsdl:message>
+  <wsdl:message name="modifierClasseResponseMessage"><wsdl:part name="parameters" element="tns:modifierClasseResponse"/></wsdl:message>
+  <wsdl:message name="supprimerClasseRequestMessage"><wsdl:part name="parameters" element="tns:supprimerClasse"/></wsdl:message>
+  <wsdl:message name="supprimerClasseResponseMessage"><wsdl:part name="parameters" element="tns:supprimerClasseResponse"/></wsdl:message>
+
+  <wsdl:message name="assignerEnseignantSectionsRequestMessage"><wsdl:part name="parameters" element="tns:assignerEnseignantSections"/></wsdl:message>
+  <wsdl:message name="assignerEnseignantSectionsResponseMessage"><wsdl:part name="parameters" element="tns:assignerEnseignantSectionsResponse"/></wsdl:message>
+  <wsdl:message name="assignerEnseignantClassesRequestMessage"><wsdl:part name="parameters" element="tns:assignerEnseignantClasses"/></wsdl:message>
+  <wsdl:message name="assignerEnseignantClassesResponseMessage"><wsdl:part name="parameters" element="tns:assignerEnseignantClassesResponse"/></wsdl:message>
+  <wsdl:message name="consulterAffectationsEnseignantRequestMessage"><wsdl:part name="parameters" element="tns:consulterAffectationsEnseignant"/></wsdl:message>
+  <wsdl:message name="consulterAffectationsEnseignantResponseMessage"><wsdl:part name="parameters" element="tns:consulterAffectationsEnseignantResponse"/></wsdl:message>
+
+  <wsdl:message name="assignerEtudiantSectionRequestMessage"><wsdl:part name="parameters" element="tns:assignerEtudiantSection"/></wsdl:message>
+  <wsdl:message name="assignerEtudiantSectionResponseMessage"><wsdl:part name="parameters" element="tns:assignerEtudiantSectionResponse"/></wsdl:message>
+
+  <wsdl:message name="SectionsFaultMessage"><wsdl:part name="fault" type="xsd:string"/></wsdl:message>
+
+  <!-- Port Type -->
+  <wsdl:portType name="PortTypeSections">
+    <wsdl:operation name="creerSection">
+      <wsdl:documentation>Crée une section (filière).</wsdl:documentation>
+      <wsdl:input message="tns:creerSectionRequestMessage"/>
+      <wsdl:output message="tns:creerSectionResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerSections">
+      <wsdl:documentation>Liste toutes les sections avec leurs classes.</wsdl:documentation>
+      <wsdl:input message="tns:listerSectionsRequestMessage"/>
+      <wsdl:output message="tns:listerSectionsResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="modifierSection">
+      <wsdl:documentation>Modifie une section.</wsdl:documentation>
+      <wsdl:input message="tns:modifierSectionRequestMessage"/>
+      <wsdl:output message="tns:modifierSectionResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerSection">
+      <wsdl:documentation>Supprime une section.</wsdl:documentation>
+      <wsdl:input message="tns:supprimerSectionRequestMessage"/>
+      <wsdl:output message="tns:supprimerSectionResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="creerClasse">
+      <wsdl:documentation>Crée une classe dans une section.</wsdl:documentation>
+      <wsdl:input message="tns:creerClasseRequestMessage"/>
+      <wsdl:output message="tns:creerClasseResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="listerClasses">
+      <wsdl:documentation>Liste les classes (filtrable par section).</wsdl:documentation>
+      <wsdl:input message="tns:listerClassesRequestMessage"/>
+      <wsdl:output message="tns:listerClassesResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="modifierClasse">
+      <wsdl:documentation>Modifie une classe.</wsdl:documentation>
+      <wsdl:input message="tns:modifierClasseRequestMessage"/>
+      <wsdl:output message="tns:modifierClasseResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerClasse">
+      <wsdl:documentation>Supprime une classe.</wsdl:documentation>
+      <wsdl:input message="tns:supprimerClasseRequestMessage"/>
+      <wsdl:output message="tns:supprimerClasseResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEnseignantSections">
+      <wsdl:documentation>Assigne un enseignant à une ou plusieurs sections.</wsdl:documentation>
+      <wsdl:input message="tns:assignerEnseignantSectionsRequestMessage"/>
+      <wsdl:output message="tns:assignerEnseignantSectionsResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEnseignantClasses">
+      <wsdl:documentation>Assigne un enseignant à une ou plusieurs classes.</wsdl:documentation>
+      <wsdl:input message="tns:assignerEnseignantClassesRequestMessage"/>
+      <wsdl:output message="tns:assignerEnseignantClassesResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="consulterAffectationsEnseignant">
+      <wsdl:documentation>Consulter les sections et classes assignées à un enseignant.</wsdl:documentation>
+      <wsdl:input message="tns:consulterAffectationsEnseignantRequestMessage"/>
+      <wsdl:output message="tns:consulterAffectationsEnseignantResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEtudiantSection">
+      <wsdl:documentation>Assigne un étudiant à une section et une classe.</wsdl:documentation>
+      <wsdl:input message="tns:assignerEtudiantSectionRequestMessage"/>
+      <wsdl:output message="tns:assignerEtudiantSectionResponseMessage"/>
+      <wsdl:fault name="SectionsFault" message="tns:SectionsFaultMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Binding -->
+  <wsdl:binding name="LiaisonSections" type="tns:PortTypeSections">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="creerSection">
+      <soap:operation soapAction="http://scolarite.example.com/sections/creerSection"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerSections">
+      <soap:operation soapAction="http://scolarite.example.com/sections/listerSections"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="modifierSection">
+      <soap:operation soapAction="http://scolarite.example.com/sections/modifierSection"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerSection">
+      <soap:operation soapAction="http://scolarite.example.com/sections/supprimerSection"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="creerClasse">
+      <soap:operation soapAction="http://scolarite.example.com/sections/creerClasse"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="listerClasses">
+      <soap:operation soapAction="http://scolarite.example.com/sections/listerClasses"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="modifierClasse">
+      <soap:operation soapAction="http://scolarite.example.com/sections/modifierClasse"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="supprimerClasse">
+      <soap:operation soapAction="http://scolarite.example.com/sections/supprimerClasse"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEnseignantSections">
+      <soap:operation soapAction="http://scolarite.example.com/sections/assignerEnseignantSections"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEnseignantClasses">
+      <soap:operation soapAction="http://scolarite.example.com/sections/assignerEnseignantClasses"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="consulterAffectationsEnseignant">
+      <soap:operation soapAction="http://scolarite.example.com/sections/consulterAffectationsEnseignant"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="assignerEtudiantSection">
+      <soap:operation soapAction="http://scolarite.example.com/sections/assignerEtudiantSection"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+      <wsdl:fault name="SectionsFault"><soap:fault name="SectionsFault" use="literal"/></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service -->
+  <wsdl:service name="ServiceSections">
+    <wsdl:port name="PortSections" binding="tns:LiaisonSections">
+      <soap:address location="http://localhost:3001/wsdl/sections"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

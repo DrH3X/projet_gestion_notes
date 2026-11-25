@@ -1,4 +1,4 @@
-// src/controllers/controleurNotes.js
+// src/controllers/notesController.js
 // Sprint 4 — Service Notes & Moyennes (BF10-BF13, BF15-BF18).
 //
 // Règles de gestion (cahier des charges §4.5) :

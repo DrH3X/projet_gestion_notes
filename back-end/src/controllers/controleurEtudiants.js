@@ -1,18 +1,19 @@
-// src/controllers/controleurEtudiants.js
+// src/controllers/studentsController.js
 // Sprint 3 — Service Étudiants (CRUD on student dossiers).
 // A dossier = User (role=etudiant) + Etudiant academic record (1-1).
 
-const { User, Etudiant } = require('../models');
+const { User, Etudiant, EnseignantClasse, EnseignantSection } = require('../models');
 const { hashPassword } = require('../utils/hachage');
 const { buildFault, FaultCodes } = require('../utils/erreurs');
 
 /**
  * Shape a Etudiant row (with its User) into the WSDL Dossier type.
- * All optional fields are included with empty strings when null — gives
- * the soap library a consistent item shape across the array.
+ * Includes section/classe info when the associations are loaded.
  */
 function toDossier(etudiant) {
   const u = etudiant.compte || etudiant.User || etudiant;
+  const section = etudiant.section;
+  const classeObj = etudiant.classeObj;
   return {
     id: etudiant.id,
     userId: etudiant.userId,
@@ -23,6 +24,10 @@ function toDossier(etudiant) {
     matricule: etudiant.matricule,
     dateNaissance: etudiant.dateNaissance || '',
     adresse: etudiant.adresse || '',
+    sectionId: etudiant.sectionId || '',
+    sectionNom: section ? section.nom : '',
+    classeId: etudiant.classeId || '',
+    classeNom: classeObj ? classeObj.nom : '',
   };
 }
 
@@ -72,10 +77,23 @@ async function creerDossier(args) {
     adresse: adresse || null,
   });
 
-  // Reload with association so toDossier can use etudiant.compte
-  const fresh = await Etudiant.findByPk(etudiant.id, { include: [{ model: User, as: 'compte' }] });
+  // Reload with associations so toDossier can use etudiant.compte + section + classe
+  const fresh = await Etudiant.findByPk(etudiant.id, {
+    include: [
+      { model: User, as: 'compte' },
+      { model: require('../models/section'), as: 'section' },
+      { model: require('../models/classe'), as: 'classeObj' },
+    ],
+  });
   return { dossier: toDossier(fresh) };
 }
+
+// Shared include array for all queries that return dossiers
+const DOSSIER_INCLUDES = [
+  { model: User, as: 'compte' },
+  { model: require('../models/section'), as: 'section' },
+  { model: require('../models/classe'), as: 'classeObj' },
+];
 
 /**
  * listerDossiers — list all student dossiers (optionally filtered by classe).
@@ -88,10 +106,9 @@ async function listerDossiers(args = {}) {
   }
   const rows = await Etudiant.findAll({
     where,
-    include: [{ model: User, as: 'compte' }],
+    include: DOSSIER_INCLUDES,
     order: [['id', 'ASC']],
   });
-  // Wrapper pattern: { dossiers: { dossier: [...] } }
   return { dossiers: { dossier: rows.map(toDossier) } };
 }
 
@@ -102,7 +119,7 @@ async function consulterDossier({ id }) {
   if (!id) {
     throw buildFault(FaultCodes.CHAMP_MANQUANT, 'Champs obligatoires manquants', ['id']);
   }
-  const etudiant = await Etudiant.findByPk(id, { include: [{ model: User, as: 'compte' }] });
+  const etudiant = await Etudiant.findByPk(id, { include: DOSSIER_INCLUDES });
   if (!etudiant) {
     throw buildFault(FaultCodes.INTROUVABLE, `Aucun dossier avec l'id ${id}`);
   }
@@ -120,7 +137,7 @@ async function consulterMonDossier(userId) {
   }
   const etudiant = await Etudiant.findOne({
     where: { userId },
-    include: [{ model: User, as: 'compte' }],
+    include: DOSSIER_INCLUDES,
   });
   if (!etudiant) {
     throw buildFault(FaultCodes.INTROUVABLE, `Aucun dossier étudiant pour l'utilisateur ${userId}`);
@@ -129,13 +146,38 @@ async function consulterMonDossier(userId) {
 }
 
 /**
- * listerMesEtudiants — BF9: a teacher lists all student dossiers (filterable by classe).
- * Input:  { classe? }
+ * listerMesEtudiants — BF9: a teacher lists student dossiers.
+ * Filters by the teacher's assigned classes (via EnseignantClasse).
+ * If the teacher has no class assignments, falls back to all students.
+ * Input:  { classe? } (optional additional filter)
  * Output: { dossiers: { dossier: [...] } }
  */
-async function listerMesEtudiants(args = {}) {
+async function listerMesEtudiants(args = {}, requestingUser) {
   const { classe } = args || {};
-  return listerDossiers({ classe });
+  const where = {};
+  if (classe) {
+    where['$compte.classe$'] = classe;
+  }
+
+  // If the requesting user is a teacher, filter by their assigned classes
+  if (requestingUser && requestingUser.role === 'enseignant') {
+    const assignments = await EnseignantClasse.findAll({
+      where: { userId: requestingUser.id },
+      attributes: ['classeId'],
+    });
+    const classeIds = assignments.map(a => a.classeId);
+    if (classeIds.length > 0) {
+      where.classeId = { [require('sequelize').Op.in]: classeIds };
+    }
+    // If no assignments, return all (backward compat)
+  }
+
+  const rows = await Etudiant.findAll({
+    where,
+    include: DOSSIER_INCLUDES,
+    order: [['id', 'ASC']],
+  });
+  return { dossiers: { dossier: rows.map(toDossier) } };
 }
 
 /**

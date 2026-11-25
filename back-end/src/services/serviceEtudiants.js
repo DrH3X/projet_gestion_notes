@@ -1,4 +1,4 @@
-// src/services/serviceEtudiants.js
+// src/services/studentsService.js
 // SOAP service object for the Students service (Sprint 3).
 // RBAC:
 //   creerDossier, listerDossiers, modifierDossier, supprimerDossier → admin only
@@ -75,7 +75,7 @@ const studentsService = {
         if (user.role !== 'enseignant') {
           return cb(buildFault(FaultCodes.ACCES_REFUSE, 'Réservé aux enseignants'));
         }
-        controller.listerMesEtudiants(args).then((r) => cb(null, r)).catch((e) => cb(e));
+        controller.listerMesEtudiants(args, user).then((r) => cb(null, r)).catch((e) => cb(e));
       },
 
       modifierDossier: function (args, cb, headers, req) {

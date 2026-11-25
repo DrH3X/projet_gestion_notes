@@ -1,4 +1,4 @@
-// src/controllers/controleurComptes.js
+// src/controllers/accountsController.js
 // Sprint 2 — Gestion des comptes (students + teachers)
 // CRUD operations: creerCompte, listerComptes, modifierCompte, supprimerCompte
 // All operations are restricted to role "administrateur" (enforced in the service).

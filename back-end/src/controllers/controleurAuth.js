@@ -1,4 +1,4 @@
-// src/controllers/controleurAuth.js
+// src/controllers/authController.js
 // Controller functions for the Authentication service (Sprint 1).
 // Each function corresponds to one SOAP operation:
 //   authUser   -> seConnecter

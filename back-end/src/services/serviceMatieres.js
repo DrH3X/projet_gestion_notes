@@ -1,4 +1,4 @@
-// src/services/serviceMatieres.js
+// src/services/subjectsService.js
 // SOAP service object for the Subjects (Matières) service (Sprint 3).
 // RBAC:
 //   creerMatiere, modifierMatiere, supprimerMatiere → admin only

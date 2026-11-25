@@ -19,16 +19,22 @@
           <xsd:element name="enseignantId" type="xsd:string"/>
           <xsd:element name="enseignantNom" type="xsd:string"/>
           <xsd:element name="enseignantPrenom" type="xsd:string"/>
+          <xsd:element name="sectionId" type="xsd:string"/>
+          <xsd:element name="sectionNom" type="xsd:string"/>
+          <xsd:element name="classeId" type="xsd:string"/>
+          <xsd:element name="classeNom" type="xsd:string"/>
         </xsd:sequence>
       </xsd:complexType>
 
-      <!-- creerMatiere -->
+      <!-- creerMatiere — assigns teacher + section + classe -->
       <xsd:element name="creerMatiere">
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="intitule" type="xsd:string"/>
             <xsd:element name="coefficient" type="xsd:decimal"/>
             <xsd:element name="enseignantId" type="xsd:string"/>
+            <xsd:element name="sectionId" type="xsd:string"/>
+            <xsd:element name="classeId" type="xsd:string"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
@@ -42,9 +48,13 @@
       </xsd:element>
 
       <!-- listerMatieres -->
+      <!-- listerMatieres — optional filters by section/classe -->
       <xsd:element name="listerMatieres">
         <xsd:complexType>
-          <xsd:sequence/>
+          <xsd:sequence>
+            <xsd:element name="sectionId" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="classeId" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
 
@@ -85,6 +95,8 @@
             <xsd:element name="intitule" type="xsd:string" minOccurs="0"/>
             <xsd:element name="coefficient" type="xsd:decimal" minOccurs="0"/>
             <xsd:element name="enseignantId" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="sectionId" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="classeId" type="xsd:string" minOccurs="0"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
